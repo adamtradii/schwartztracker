@@ -26,7 +26,7 @@ export async function runBacktest(opts) {
   const strategy = getStrategy(strategyName, opts.params);
   // "-real" markets replay committed historical data; `seed` selects the window.
   const adapter = market.endsWith("-real")
-    ? new ReplayAdapter({ market, window: seed })
+    ? new ReplayAdapter({ market, window: seed, resample: opts.resample })
     : new SimulatedAdapter({ market, seed, symbols: opts.symbols });
   await adapter.connect();
 

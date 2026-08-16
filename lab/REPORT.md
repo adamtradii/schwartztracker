@@ -1,13 +1,13 @@
 # Lab Report
 
-_Last run: 2026-08-16T12:31:34.327Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-16T16:32:13.565Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
 | Strategy | Market | Median return | Worst seed | Best seed | Median DD | Win rate | Trades | Score |
 |---|---|---|---|---|---|---|---|---|
 | sma-crossover | stocks | 13.09% | 8.38% | 22.94% | 2.72% | 33.3% | 2619 | 16.60 |
-| rsi-mean-reversion | stocks | -6.82% | -13.37% | -4.50% | 7.28% | 23.0% | 225 | -15.32 |
+| rsi-mean-reversion | stocks | -6.11% | -12.01% | -3.80% | 6.82% | 20.7% | 315 | -13.83 |
 | extreme-fade | prediction | 2.70% | 0.78% | 6.17% | 1.41% | 84.3% | 136 | 2.74 |
 | venue-arb | prediction-arb | 13.55% | 9.68% | 18.77% | 1.43% | 54.9% | 1575 | 18.04 |
 
@@ -17,7 +17,7 @@ _Real historical data committed under `data/real/`: 1-min index bars (S&P 500, D
 
 | Strategy | Market | Median return | Worst window | Best window | Win rate | Trades |
 |---|---|---|---|---|---|---|
-| sma-crossover | stocks-real | -3.43% | -5.11% | -2.02% | 21.3% | 2701 |
+| sma-crossover | stocks-real | 0.40% | -1.68% | 3.05% | 45.3% | 97 |
 | rsi-mean-reversion | stocks-real | -4.67% | -6.93% | -2.83% | 22.8% | 3266 |
 | extreme-fade | prediction-real | -0.64% | -8.94% | 8.10% | 36.2% | 81 |
 
@@ -40,8 +40,8 @@ _Goal profiles (engine/goal-profiles.json) are deliberately aggressive: 4x intra
     "rsiPeriod": 21,
     "oversold": 20,
     "recovered": 50,
-    "stopLossPct": 2.5,
-    "takeProfitPct": 4
+    "stopLossPct": 1.2,
+    "takeProfitPct": 2
   },
   "sma-crossover": {
     "fast": 7,
@@ -59,5 +59,6 @@ _Goal profiles (engine/goal-profiles.json) are deliberately aggressive: 4x intra
 | 3 | 08-16 08:44 | 9.79 | -15.32 | 2.74 | 18.04 | — |
 | 4 | 08-16 09:32 | 9.79 | -15.32 | 2.74 | 18.04 | — |
 | 5 | 08-16 12:31 | 16.60 | -15.32 | 2.74 | 18.04 | sma-crossover ✓ |
+| 6 | 08-16 16:32 | 16.60 | -13.83 | 2.74 | 18.04 | rsi-mean-reversion ✓ |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

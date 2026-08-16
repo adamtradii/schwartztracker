@@ -53,6 +53,24 @@ Each cycle appends; nothing gets deleted. Studies are re-runnable:
 
 **Conclusion:** on real index data at 1-minute cadence, neither momentum (#1) nor mean reversion (#4) clears 6 bps costs. 1-min bars on these instruments are untradeable at retail cost assumptions, full stop. All stock-strategy hope now rides on slower bars (resampling, next in queue) or lower-cost venue assumptions — and any strategy that only wins on simulated 1-min bars should be treated as a simulator artifact.
 
+## 2026-08-16 16:29Z — cycle 2
+
+### 5. Bar resampling: stops the bleeding, doesn't create an edge
+
+Added N-minute resampling to ReplayAdapter and ran the SMA grid on real windows at 5-min and 15-min cadence ($500, all 10 windows):
+
+| Config | Median | Worst | Positive windows |
+|---|---|---|---|
+| 1-min (cycle-1 baseline, tuned) | −3.43% | −5.11% | 0/10 |
+| 5-min SMA 20/60 L/S | +0.10% | −1.58% | 5/10 |
+| 15-min SMA 20/60 L/S | **+0.40%** | −1.68% | 5/10 |
+
+- Slower bars cut trade count ~25-75x, which mostly eliminates the cost bleed — returns move from clearly negative to statistically indistinguishable from zero. No config shows a real edge (5/10 positive windows = coin flip).
+- Matches study #1: autocorrelation at 5-60 min horizons is ≈ 0 on these instruments. Trend-following here is breakeven-at-best, at any cadence we can measure.
+- Caveat: each window is only 3 days, so 15-min bars give ~288 bars and a handful of crosses — variance is large. A fair test of slow trend-following needs longer windows (weeks), which the source data supports. Queued.
+
+**Applied:** REAL_EXPERIMENTS now evaluates sma-crossover at 15-min resample with 20/60 L/S — reporting the strategy at its least-bad known configuration, honestly labeled breakeven.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

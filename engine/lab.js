@@ -139,7 +139,9 @@ async function tune(strategyName, historyLen) {
 // cadence is 25x coarser), but the simulator is never adjusted to match sim
 // results — real numbers are reported as they land.
 const REAL_EXPERIMENTS = [
-  { market: "stocks-real", strategy: "sma-crossover", params: {} },
+  // 15-min resample + 20/60 L/S: least-bad known config (cycle-2 finding —
+  // breakeven, not an edge; 1-min bled −3.4% median).
+  { market: "stocks-real", strategy: "sma-crossover", params: { fast: 20, slow: 60, allowShort: true }, resample: 15 },
   { market: "stocks-real", strategy: "rsi-mean-reversion", params: { mode: "momentum", allowShort: true, rsiPeriod: 21, breakout: 60, fade: 48, stopLossPct: 2.5, takeProfitPct: 8 } },
   { market: "prediction-real", strategy: "extreme-fade", params: { trend: 6, minJump: 0.03, minStretch: 0.03 } },
 ];
@@ -148,7 +150,7 @@ const REAL_WINDOWS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 export async function evaluateRealData() {
   const out = [];
   for (const exp of REAL_EXPERIMENTS) {
-    const r = await evaluate(exp.market, exp.strategy, exp.params, REAL_WINDOWS, { bars: 4320 });
+    const r = await evaluate(exp.market, exp.strategy, exp.params, REAL_WINDOWS, { bars: 4320, resample: exp.resample });
     out.push({ ...exp, ...r });
   }
   return out;

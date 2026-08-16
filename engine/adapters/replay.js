@@ -16,10 +16,29 @@ export function realWindowCount(market) {
   return fs.readdirSync(dir).filter((f) => f.startsWith(prefix) && f.endsWith(".json.gz")).length;
 }
 
+// Aggregate consecutive 1-min bars into N-minute bars (OHLC + summed volume).
+export function resampleBars(bars, n) {
+  if (!n || n <= 1) return bars;
+  const out = [];
+  for (let i = 0; i + n <= bars.length; i += n) {
+    const chunk = bars.slice(i, i + n);
+    out.push({
+      time: chunk.at(-1).time,
+      open: chunk[0].open,
+      high: Math.max(...chunk.map((b) => b.high)),
+      low: Math.min(...chunk.map((b) => b.low)),
+      close: chunk.at(-1).close,
+      volume: chunk.reduce((a, b) => a + b.volume, 0),
+    });
+  }
+  return out;
+}
+
 export class ReplayAdapter {
-  constructor({ market = "stocks-real", window = 0, intervalMs } = {}) {
+  constructor({ market = "stocks-real", window = 0, intervalMs, resample = 1 } = {}) {
     this.market = market;
     this.window = window;
+    this.resample = resample;
     // Strategies see the same market kind as the simulated equivalents.
     this.strategyMarket = market === "prediction-real" ? "prediction" : "stocks";
     this.name = `replay-${market}-w${window}`;
@@ -36,7 +55,7 @@ export class ReplayAdapter {
     }
     const data = JSON.parse(zlib.gunzipSync(fs.readFileSync(file)).toString());
     this.source = data.source;
-    for (const [sym, bars] of Object.entries(data.symbols)) this._series.set(sym, bars);
+    for (const [sym, bars] of Object.entries(data.symbols)) this._series.set(sym, resampleBars(bars, this.resample));
     this.symbols = [...this._series.keys()];
   }
 

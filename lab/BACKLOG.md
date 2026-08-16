@@ -8,7 +8,7 @@ worst; never modify data/real/ contents or weaken simulator realism.
 
 ## Queue
 
-- [ ] **Bar resampling**: add 5-min/15-min resampling to ReplayAdapter (aggregate 1-min bars), re-run momentum study and SMA configs on slower bars. Does trend edge appear at slower timescales net of costs? (Raised stakes: cycle-1 result means slower bars are the only remaining path for stock strategies at retail costs.)
+- [ ] **Long real windows for slow strategies**: extend ingest-real.js to ALSO emit ten 30-trading-day windows at 15-min cadence (new files stocks-long-w*.json.gz; never touch existing files; fixed pre-registered start dates spread over 2012-2018). Re-test slow SMA/momentum configs where they get enough crosses to mean something. Requires the /workspace source clone — re-clone FutureSharks/financial-data if the container recycled it.
 - [ ] **Re-ingest prediction windows without selection bias**: change ingest-real.js market selection from top-range to seeded-random among usable markets, re-run reversion study on committed windows, confirm it matches the full-sample sign.
 - [ ] **Fade threshold sweep on real data**: extreme-fade on prediction-real with minJump ∈ {5c, 8c} only; compare vs costs. If nothing clears 1c round-trip, record that fading mids at snapshot cadence is untradeable and mark the strategy sim-only.
 - [ ] **Adaptive arb entry threshold**: make venue-arb's entrySpread scale with a cost estimate (≥ 4× per-leg slip + 1c margin), re-run arb-stress. Goal: median stays positive at 1c slip even if smaller.
@@ -18,6 +18,7 @@ worst; never modify data/real/ contents or weaken simulator realism.
 
 ## Done
 
+- [x] 2026-08-16 (cycle 2) Bar resampling: 5/15-min bars move real SMA results from −3.4% median to ~breakeven (+0.4% best config, 5/10 windows positive) — no edge, but no cost bleed; longer windows queued → FINDINGS.md #5
 - [x] 2026-08-16 (cycle 1) Stocks mean-reversion at 1-min: NOT tradeable — gross ≈ 0 bps after k-sigma moves, net −6 to −10 bps, negative in 10/10 windows across full k×H grid → FINDINGS.md #4
 
 - [x] 2026-08-16 Momentum study (stocks-real): trend assumption fails at 1-min; best gross +1.4 bps vs 6 bps costs → FINDINGS.md #1
