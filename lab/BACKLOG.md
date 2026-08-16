@@ -6,14 +6,21 @@ to Done with a one-line result), and add any new hypotheses it generates.
 Rules: verify across ALL windows/seeds; improvements must help median AND
 worst; never modify data/real/ contents or weaken simulator realism.
 
+VENUE CONTEXT (2026-08-16): Adam is in Washington State. Kalshi is unavailable
+there — do not build toward Kalshi live trading. Polymarket is Adam's actionable
+prediction venue (he reports access; no paper mode exists, so anything aimed
+there must survive real-data testing before any real-money suggestion, sized
+tiny). Alpaca paper is the live-testing track for stocks once keys arrive.
+Never suggest circumventing state restrictions.
+
 ## Queue
 
 - [ ] **Calibrate the prediction simulator to real measurements** (URGENT — do before trusting any sim prediction number): goal-v2 baseline shows extreme-fade making +7,719%/month in sim while the real reversion study (#2) measured reversion BELOW round-trip costs. The sim's overshoot events are far too frequent/large/reliable. Recalibrate generatePredictionBars against the measured real numbers (mean next-move after ≥5c real moves = −0.33c, ~35% reversion rate; sim should reproduce approximately those conditional statistics), then re-run the reversion study ON SIM DATA to verify sim ≈ real. This makes the simulator MORE realistic (allowed and required); document before/after in FINDINGS.md. Expect sim prediction returns to collapse toward reality.
-
+- [ ] **Expiry-drift study** (Adam's #4a — PROMOTED: Polymarket is Adam's actionable venue): data/real/polymarket-markets-snapshot.csv.gz has 9.5k real markets with end dates and current prices. Measure: do prices cluster toward 0/1 as expiry approaches (cross-sectionally)? Is there a systematic pattern in the final days worth trading? Note honestly that this is a cross-sectional snapshot, not a panel — state what it can and cannot support.
+- [ ] **New-market mispricing study** (Adam's #4b — PROMOTED): same snapshot has created_date. Compare spread/price behavior of young markets (<7 days old) vs mature ones. If young markets look sloppier (wider spreads, prices further from round numbers), design a follow-up strategy test. The snapshot has best_bid/best_ask — real spread data; use it.
+- [ ] **Polymarket cost model** (NEW): before any strategy is judged "tradeable on Polymarket," build the realistic cost stack from the snapshot's own bid/ask data: median spread by price level and liquidity tier, plus taker dynamics. Replace the flat 0.5c-slip assumption in prediction-real evaluations with spreads measured from this data. Every prediction finding should then be re-stated net of measured costs.
 - [ ] **Slow strategies on long windows** (Adam's #2): data is READY — stocks-long-real (ten 30-day windows, 15-min bars) and stocks-daily-real (2010-2018 daily) are committed. Test SMA/momentum configs with multi-day holds where they finally get enough signals: SMA 20/60 and 50/200 on stocks-long-real; SMA 10/50, 20/100 and RSI-momentum on stocks-daily-real. Costs: 6 bps round trip. Report per-window medians and whether anything is positive in ≥7/10 windows (daily = single 9-year run; report per-year returns instead).
 - [ ] **Portfolio combination test** (Adam's #3): build engine/experiments/portfolio-study.js — combine the per-system equity curves (equal capital split, using each system's best-known real-data config; sim-only for venue-arb, labeled as such) and measure combined return, drawdown, and whether diversification helps vs the best single system. Use real-data results where they exist.
-- [ ] **Expiry-drift study** (Adam's #4a): data/real/polymarket-markets-snapshot.csv.gz has 9.5k real markets with end dates and current prices. Measure: do prices cluster toward 0/1 as expiry approaches (cross-sectionally)? Is there a systematic pattern in the final days worth trading? Note honestly that this is a cross-sectional snapshot, not a panel — state what it can and cannot support.
-- [ ] **New-market mispricing study** (Adam's #4b): same snapshot has created_date. Compare spread/price behavior of young markets (<7 days old) vs mature ones. If young markets look sloppier (wider spreads, prices further from round numbers), design a follow-up strategy test.
 - [ ] **Re-ingest prediction windows without selection bias**: change ingest-real.js market selection from top-range to seeded-random among usable markets, re-run reversion study on committed windows, confirm it matches the full-sample sign.
 - [ ] **Fade threshold sweep on real data**: extreme-fade on prediction-real with minJump ∈ {5c, 8c} only; compare vs costs. If nothing clears 1c round-trip, record that fading mids at snapshot cadence is untradeable and mark the strategy sim-only.
 - [ ] **Adaptive arb entry threshold**: make venue-arb's entrySpread scale with a cost estimate (≥ 4× per-leg slip + 1c margin), re-run arb-stress. Goal: median stays positive at 1c slip even if smaller.
