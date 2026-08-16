@@ -19,6 +19,7 @@ export function parseArgs(argv) {
 }
 
 export function pickDefaultStrategy(market) {
+  market = market.replace(/-real$/, "");
   if (market === "prediction") return "extreme-fade";
   if (market === "prediction-arb") return "venue-arb";
   return "sma-crossover";

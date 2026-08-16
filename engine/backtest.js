@@ -10,6 +10,7 @@ import { Portfolio } from "./lib/portfolio.js";
 import { RiskManager } from "./lib/risk.js";
 import { getStrategy, STRATEGIES } from "./strategies/index.js";
 import { SimulatedAdapter } from "./adapters/simulated.js";
+import { ReplayAdapter } from "./adapters/replay.js";
 import { parseArgs, pickDefaultStrategy } from "./cli-args.js";
 
 export async function runBacktest(opts) {
@@ -23,7 +24,10 @@ export async function runBacktest(opts) {
   } = opts;
 
   const strategy = getStrategy(strategyName, opts.params);
-  const adapter = new SimulatedAdapter({ market, seed, symbols: opts.symbols });
+  // "-real" markets replay committed historical data; `seed` selects the window.
+  const adapter = market.endsWith("-real")
+    ? new ReplayAdapter({ market, window: seed })
+    : new SimulatedAdapter({ market, seed, symbols: opts.symbols });
   await adapter.connect();
 
   const portfolio = new Portfolio(cash, { margin: opts.margin ?? 1 });

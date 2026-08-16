@@ -57,6 +57,15 @@ Everything is priced in dollars end to end — a stock share or a 0–1 predicti
 
 The `venue-arb` strategy trades cross-venue prediction-market arbitrage: the simulator quotes the same event on two venues (`EVENT@A` / `EVENT@B`) with venue-specific noise and occasional stale quotes; when the venues disagree by more than round-trip costs, the strategy shorts the rich venue and longs the cheap one, closing both legs on convergence.
 
+## Real data
+
+`data/real/` holds committed windows of **real historical market data** (1.4 MB gzipped), built by `node engine/data/ingest-real.js` from public GitHub datasets:
+
+- **Stocks**: 1-minute bars for the S&P 500, DAX, Nikkei 225, and EuroStoxx 50 — ten 3-day windows spread across 2012-2018 (histdata.com via [FutureSharks/financial-data](https://github.com/FutureSharks/financial-data))
+- **Prediction markets**: real Polymarket Yes prices for 80 markets at their native ~25-minute snapshot cadence ([manja316/polymarket-historical-data](https://github.com/manja316/polymarket-historical-data))
+
+Backtest against them with `--market stocks-real` or `--market prediction-real` (the seed picks the window), and every `npm run lab` run includes a real-data validation table. Cross-venue arb pairs don't exist in any reachable public dataset, so `venue-arb` is validated on simulated venue pairs only — treat its results accordingly. In 49k real Polymarket Yes/No snapshots, complement prices always summed to ~$1.00: the published mid-price feed contains no internal arbitrage, which is a useful reminder that real arb edges live inside the bid/ask spread, not in mid prices.
+
 ## Risk management
 
 Every entry signal passes through `engine/lib/risk.js`:

@@ -130,6 +130,30 @@ async function tune(strategyName, historyLen) {
   return { strategy: strategyName, improved: false, from: baseline.score, to: best.result.score };
 }
 
+// ── Real-data validation ──
+// Every lab run also evaluates on REAL historical data committed under
+// data/real/ (see engine/data/ingest-real.js for provenance):
+//   stocks-real:     1-min S&P 500 / DAX / Nikkei / EuroStoxx windows, 2012-2018
+//   prediction-real: Polymarket Yes prices at ~25-min native cadence
+// Windows play the role of seeds. Params may differ from sim (the prediction
+// cadence is 25x coarser), but the simulator is never adjusted to match sim
+// results — real numbers are reported as they land.
+const REAL_EXPERIMENTS = [
+  { market: "stocks-real", strategy: "sma-crossover", params: {} },
+  { market: "stocks-real", strategy: "rsi-mean-reversion", params: { mode: "momentum", allowShort: true, rsiPeriod: 21, breakout: 60, fade: 48, stopLossPct: 2.5, takeProfitPct: 8 } },
+  { market: "prediction-real", strategy: "extreme-fade", params: { trend: 6, minJump: 0.03, minStretch: 0.03 } },
+];
+const REAL_WINDOWS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+export async function evaluateRealData() {
+  const out = [];
+  for (const exp of REAL_EXPERIMENTS) {
+    const r = await evaluate(exp.market, exp.strategy, exp.params, REAL_WINDOWS, { bars: 4320 });
+    out.push({ ...exp, ...r });
+  }
+  return out;
+}
+
 // ── Goal evaluation ──
 // /goal: turn $500 into $1500 per system within 72 simulated trading hours.
 // Judged on median final equity across seeds using the aggressive profiles in
@@ -175,6 +199,15 @@ function writeReport(history) {
   ];
   for (const r of latest.results) {
     lines.push(`| ${r.strategy} | ${r.market} | ${r.medianReturnPct.toFixed(2)}% | ${r.worstReturnPct.toFixed(2)}% | ${r.bestReturnPct.toFixed(2)}% | ${r.medianDrawdownPct.toFixed(2)}% | ${r.meanWinRate.toFixed(1)}% | ${r.totalTrades} | ${r.score.toFixed(2)} |`);
+  }
+  if (latest.real) {
+    lines.push("", "## Real-data validation", "");
+    lines.push("_Real historical data committed under `data/real/`: 1-min index bars (S&P 500, DAX, Nikkei, EuroStoxx; 2012-2018 windows) and Polymarket Yes prices at native ~25-min cadence. Windows play the role of seeds. These numbers are reported as they land — the simulator is never adjusted to make them look better._", "");
+    lines.push("| Strategy | Market | Median return | Worst window | Best window | Win rate | Trades |");
+    lines.push("|---|---|---|---|---|---|---|");
+    for (const r of latest.real) {
+      lines.push(`| ${r.strategy} | ${r.market} | ${r.medianReturnPct.toFixed(2)}% | ${r.worstReturnPct.toFixed(2)}% | ${r.bestReturnPct.toFixed(2)}% | ${r.meanWinRate.toFixed(1)}% | ${r.totalTrades} |`);
+    }
   }
   if (latest.goal) {
     const g = latest.goal;
@@ -227,6 +260,12 @@ async function main() {
     console.log(`[lab] ${exp.strategy.padEnd(20)} median ${r.medianReturnPct.toFixed(2).padStart(7)}%  worst ${r.worstReturnPct.toFixed(2).padStart(7)}%  score ${r.score.toFixed(2)}`);
   }
 
+  console.log(`\n[lab] real-data validation (10 historical windows each)`);
+  const real = await evaluateRealData();
+  for (const r of real) {
+    console.log(`[lab] ${r.strategy.padEnd(20)} ${r.market.padEnd(16)} median ${r.medianReturnPct.toFixed(2).padStart(7)}%  worst ${r.worstReturnPct.toFixed(2).padStart(7)}%  trades ${r.totalTrades}`);
+  }
+
   console.log(`\n[lab] goal check: $500 → $1500 in 4320 bars (median across ${EVAL_SEEDS.length} seeds)`);
   const goal = await evaluateGoal();
   for (const r of goal.results) {
@@ -234,7 +273,7 @@ async function main() {
   }
   console.log(`[lab] goal status: ${goal.allPass ? "✅ ALL SYSTEMS PASS" : "❌ not yet"}`);
 
-  const record = { ts: new Date().toISOString(), cash: CASH, bars: BARS, results, tuned, goal };
+  const record = { ts: new Date().toISOString(), cash: CASH, bars: BARS, results, tuned, real, goal };
   fs.appendFileSync(histPath, JSON.stringify(record) + "\n");
   history.push(record);
   writeReport(history);

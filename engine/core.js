@@ -4,8 +4,10 @@
 
 export class Engine {
   constructor({ adapter, strategy, portfolio, risk, log = console.log }) {
-    if (!strategy.markets.includes(adapter.market)) {
-      throw new Error(`Strategy "${strategy.name}" targets ${strategy.markets.join("/")} markets, adapter is ${adapter.market}`);
+    // Replay adapters expose strategyMarket ("stocks-real" behaves as "stocks").
+    this.effectiveMarket = adapter.strategyMarket ?? adapter.market;
+    if (!strategy.markets.includes(this.effectiveMarket)) {
+      throw new Error(`Strategy "${strategy.name}" targets ${strategy.markets.join("/")} markets, adapter is ${this.effectiveMarket}`);
     }
     this.adapter = adapter;
     this.strategy = strategy;
@@ -67,7 +69,7 @@ export class Engine {
       const { stopPrice, targetPrice } = this.risk.stops(signal.side, price, signal);
       // Stocks allow fractional shares (Alpaca supports them); prediction
       // contracts are whole units.
-      const qty = this.risk.size(equity, price, stopPrice, { fractional: this.adapter.market === "stocks" });
+      const qty = this.risk.size(equity, price, stopPrice, { fractional: this.effectiveMarket === "stocks" });
       if (qty <= 0) return;
 
       const orderSide = signal.side === "long" ? "buy" : "sell";

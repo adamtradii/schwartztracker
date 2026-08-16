@@ -1,0 +1,139 @@
+// Ingests REAL market data into compact committed windows under data/real/.
+//
+// Sources (public GitHub datasets, cloned to /workspace by the session):
+//   stocks:     FutureSharks/financial-data — histdata.com 1-minute bars for
+//               SPXUSD (S&P 500), GRXEUR (DAX), JPXJPY (Nikkei 225),
+//               ETXEUR (EuroStoxx 50), 2010-2018
+//   prediction: manja316/polymarket-historical-data — prices_sample.csv,
+//               real Polymarket Yes prices, ~26 snapshots per market
+//               (~25-minute cadence) across 2,023 markets
+//
+// Output: data/real/stocks-w<N>.json.gz  (10 windows × 4 symbols × 4320 bars)
+//         data/real/prediction-w<N>.json.gz (10 windows × 8 markets × native bars)
+// These are committed to git so lab cycles can evaluate on real data without
+// re-cloning multi-GB sources.
+//
+// Usage: node engine/data/ingest-real.js [--stocks-src DIR] [--poly-src FILE]
+
+import fs from "node:fs";
+import path from "node:path";
+import zlib from "node:zlib";
+import { parseArgs } from "../cli-args.js";
+
+const OUT_DIR = path.join(process.cwd(), "data", "real");
+const STOCKS_SRC = "/workspace/futuresharks/financial-data/pyfinancialdata/data/stocks/histdata";
+const POLY_SRC = "/workspace/manja316/polymarket-historical-data/prices_sample.csv";
+
+const INSTRUMENTS = ["SPXUSD", "GRXEUR", "JPXJPY", "ETXEUR"];
+// One window per ~9 months, 2012-2018: covers calm and volatile regimes.
+const WINDOW_STARTS = [
+  "2012-03-05", "2012-11-12", "2013-08-05", "2014-05-05", "2015-01-12",
+  "2015-10-05", "2016-06-27", "2017-03-06", "2017-11-06", "2018-08-06",
+];
+const BARS_PER_WINDOW = 4320;
+
+function writeGz(file, obj) {
+  fs.writeFileSync(file, zlib.gzipSync(JSON.stringify(obj)));
+  console.log(`  wrote ${file} (${(fs.statSync(file).size / 1024).toFixed(0)} KB)`);
+}
+
+// histdata M1 format: "YYYYMMDD HHMMSS;open;high;low;close;volume" in EST.
+function* histdataBars(file) {
+  const text = fs.readFileSync(file, "latin1");
+  for (const line of text.split("\n")) {
+    const parts = line.trim().split(";");
+    if (parts.length < 5) continue;
+    const dt = parts[0];
+    const time = Date.UTC(+dt.slice(0, 4), +dt.slice(4, 6) - 1, +dt.slice(6, 8), +dt.slice(9, 11), +dt.slice(11, 13));
+    yield {
+      time,
+      open: +parts[1], high: +parts[2], low: +parts[3], close: +parts[4],
+      volume: +parts[5] || 1,
+    };
+  }
+}
+
+function round(bar) {
+  return {
+    time: bar.time,
+    open: +bar.open.toFixed(4), high: +bar.high.toFixed(4),
+    low: +bar.low.toFixed(4), close: +bar.close.toFixed(4),
+    volume: bar.volume,
+  };
+}
+
+function ingestStocks(srcDir) {
+  console.log("[ingest] stocks: real 1-min index bars (histdata via FutureSharks/financial-data)");
+  for (let w = 0; w < WINDOW_STARTS.length; w++) {
+    const startTs = Date.parse(WINDOW_STARTS[w] + "T00:00:00Z");
+    const year = WINDOW_STARTS[w].slice(0, 4);
+    const symbols = {};
+    for (const inst of INSTRUMENTS) {
+      const files = [
+        path.join(srcDir, inst, `DAT_ASCII_${inst}_M1_${year}.csv`),
+        path.join(srcDir, inst, `DAT_ASCII_${inst}_M1_${+year + 1}.csv`),
+      ].filter((f) => fs.existsSync(f));
+      const bars = [];
+      for (const f of files) {
+        for (const b of histdataBars(f)) {
+          if (b.time < startTs) continue;
+          bars.push(round(b));
+          if (bars.length >= BARS_PER_WINDOW) break;
+        }
+        if (bars.length >= BARS_PER_WINDOW) break;
+      }
+      if (bars.length >= BARS_PER_WINDOW * 0.9) symbols[inst] = bars;
+      else console.warn(`  ! ${inst} window ${w}: only ${bars.length} bars, skipping symbol`);
+    }
+    writeGz(path.join(OUT_DIR, `stocks-w${w}.json.gz`), {
+      source: "histdata.com 1-min via github.com/FutureSharks/financial-data",
+      start: WINDOW_STARTS[w], bars: BARS_PER_WINDOW, symbols,
+    });
+  }
+}
+
+function ingestPolymarket(srcFile) {
+  console.log("[ingest] prediction: real Polymarket snapshot prices (manja316/polymarket-historical-data)");
+  const lines = fs.readFileSync(srcFile, "utf8").trim().split("\n").slice(1);
+  const byMarket = new Map();
+  for (const line of lines) {
+    const [id, outcome, price, ts] = line.split(",");
+    if (outcome !== "Yes") continue;
+    if (!byMarket.has(id)) byMarket.set(id, []);
+    byMarket.get(id).push({ time: Date.parse(ts), close: +price });
+  }
+  // Keep markets that actually move and aren't pinned near 0/1.
+  const usable = [];
+  for (const [id, pts] of byMarket) {
+    pts.sort((a, b) => a.time - b.time);
+    const closes = pts.map((p) => p.close);
+    const min = Math.min(...closes), max = Math.max(...closes);
+    if (pts.length >= 20 && min > 0.03 && max < 0.97 && max - min >= 0.01) {
+      usable.push({ id, bars: pts.map((p) => ({ time: p.time, open: p.close, high: p.close, low: p.close, close: p.close, volume: 1 })) });
+    }
+  }
+  // Most-active first so every window gets markets with real movement.
+  usable.sort((a, b) => {
+    const range = (m) => Math.max(...m.bars.map((x) => x.close)) - Math.min(...m.bars.map((x) => x.close));
+    return range(b) - range(a);
+  });
+  console.log(`  ${usable.length} usable markets of ${byMarket.size}`);
+  const WINDOWS = 10, PER_WINDOW = 8;
+  for (let w = 0; w < WINDOWS; w++) {
+    const symbols = {};
+    for (let i = 0; i < PER_WINDOW; i++) {
+      const m = usable[w + i * WINDOWS]; // stride so windows don't share markets
+      if (m) symbols[`PM-${m.id}`] = m.bars;
+    }
+    writeGz(path.join(OUT_DIR, `prediction-w${w}.json.gz`), {
+      source: "Polymarket via github.com/manja316/polymarket-historical-data (Yes mid prices, ~25-min cadence)",
+      cadenceMinutes: 25, symbols,
+    });
+  }
+}
+
+const args = parseArgs(process.argv.slice(2));
+fs.mkdirSync(OUT_DIR, { recursive: true });
+ingestStocks(args.stocksSrc ?? STOCKS_SRC);
+ingestPolymarket(args.polySrc ?? POLY_SRC);
+console.log("[ingest] done");
