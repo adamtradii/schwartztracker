@@ -5,5 +5,9 @@
     "recovered": 50,
     "stopLossPct": 2.5,
     "takeProfitPct": 4
+  },
+  "sma-crossover": {
+    "fast": 7,
+    "slow": 50
   }
 }

@@ -42,6 +42,17 @@ Each cycle appends; nothing gets deleted. Studies are re-runnable:
 
 **Implications:** the arb profile is calibrated to 0.5c slippage and has no headroom. The entry threshold should scale with measured execution cost (entrySpread ≥ 4× per-leg cost + margin), and that adaptive rule needs implementing and stress-testing. Real cross-venue data remains unavailable in-sandbox; all arb numbers are simulation-only.
 
+## 2026-08-16 12:29Z — cycle 1
+
+### 4. Stocks 1-min mean reversion: NOT TRADEABLE — the autocorrelation is real but worthless
+
+`stock-reversion-study.js`: fade k-sigma 1-min moves (k ∈ 2-4), hold 5-30 bars, 6 bps round-trip cost, 40 real symbol-windows:
+
+- Every cell of the grid is net-negative (−5.8 to −9.9 bps/trade) and **negative in 10/10 windows**. Mean net ≈ −6 bps means gross ≈ 0: after a large 1-min move, the next 5-30 minutes are a coin flip.
+- The −0.045 autocorrelation from study #1 is spread thinly across all bars — it does not concentrate after big moves, so there's no entry filter to harvest it. Win rates 19-34% with the negative skew typical of fading.
+
+**Conclusion:** on real index data at 1-minute cadence, neither momentum (#1) nor mean reversion (#4) clears 6 bps costs. 1-min bars on these instruments are untradeable at retail cost assumptions, full stop. All stock-strategy hope now rides on slower bars (resampling, next in queue) or lower-cost venue assumptions — and any strategy that only wins on simulated 1-min bars should be treated as a simulator artifact.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
