@@ -112,8 +112,11 @@ export function generateVenuePair(event, opts = {}) {
 }
 
 export class SimulatedAdapter {
-  constructor({ market = "stocks", symbols, seed = 42, intervalMs = 60_000 } = {}) {
+  constructor({ market = "stocks", symbols, seed = 42, intervalMs = 60_000, slippage, failRate = 0 } = {}) {
     this.market = market;
+    this.slippage = slippage;   // override per-side slippage (stress testing)
+    this.failRate = failRate;   // probability an order is rejected (missed leg)
+    this._orderRng = mulberry32(seed ^ 0x5f356495);
     this.symbols = symbols ?? {
       prediction: ["FED-CUT-SEP", "CPI-ABOVE-3", "SHUTDOWN-OCT"],
       "prediction-arb": ["FED-CUT-SEP@A", "FED-CUT-SEP@B", "CPI-ABOVE-3@A", "CPI-ABOVE-3@B"],
@@ -158,7 +161,10 @@ export class SimulatedAdapter {
 
   // Simulated fill at close price with slippage + commission-ish fee.
   async placeOrder({ symbol, side, qty, price }) {
-    const slip = this.market.startsWith("prediction") ? 0.005 : price * 0.0003;
+    if (this.failRate > 0 && this._orderRng() < this.failRate) {
+      return { symbol, side, qty, fillPrice: null, status: "rejected" };
+    }
+    const slip = this.slippage ?? (this.market.startsWith("prediction") ? 0.005 : price * 0.0003);
     const fill = side === "buy" ? price + slip : price - slip;
     return { symbol, side, qty, fillPrice: fill, status: "filled" };
   }
