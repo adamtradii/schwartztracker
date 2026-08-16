@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-16T18:14:04.194Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-16T21:15:55.807Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -8,8 +8,8 @@ _Last run: 2026-08-16T18:14:04.194Z · $500 simulated bankroll per strategy · 1
 |---|---|---|---|---|---|---|---|---|
 | sma-crossover | stocks | 13.09% | 8.38% | 22.94% | 2.72% | 33.3% | 2619 | 16.60 |
 | rsi-mean-reversion | stocks | -6.11% | -12.01% | -3.80% | 6.82% | 20.7% | 315 | -13.83 |
-| extreme-fade | prediction | 2.70% | 0.78% | 6.17% | 1.41% | 84.3% | 136 | 2.74 |
-| venue-arb | prediction-arb | 13.55% | 9.68% | 18.77% | 1.43% | 54.9% | 1575 | 18.04 |
+| extreme-fade | prediction | 0.11% | -0.12% | 0.35% | 0.07% | 50.0% | 11 | 0.03 |
+| venue-arb | prediction-arb | -0.11% | -0.65% | 0.67% | 0.23% | 19.1% | 40 | -0.49 |
 
 ## Real-data validation
 
@@ -29,8 +29,8 @@ _$500 per system, measured over ~1 month per run. "real" = real historical windo
 |---|---|---|---|---|---|---|---|
 | sma-crossover | real | -3.78% | -14.47% | 0.02% | 9.2% | 15.6% | ❌ |
 | rsi-mean-reversion | real | -6.74% | -17.49% | 6.89% | 12.6% | 21.2% | ❌ |
-| extreme-fade | sim | 7718.76% | 5015.44% | 43857.32% | 12.4% | 15.6% | 🚀 stretch |
-| venue-arb | sim | 2938.60% | 1197.41% | 5482.06% | 7.9% | 11.2% | 🚀 stretch |
+| extreme-fade | sim | -10.11% | -26.66% | 9.72% | 13.7% | 28.3% | ❌ |
+| venue-arb | sim | 2.11% | -6.01% | 8.67% | 4.5% | 6.1% | ❌ |
 
 _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk settings. Push returns higher only while the drawdown cap holds._
 
@@ -48,6 +48,11 @@ _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk
   "sma-crossover": {
     "fast": 7,
     "slow": 50
+  },
+  "venue-arb": {
+    "entrySpread": 0.03,
+    "exitSpread": 0.005,
+    "stopSpread": 0.12
   }
 }
 ```
@@ -63,5 +68,7 @@ _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk
 | 5 | 08-16 12:31 | 16.60 | -15.32 | 2.74 | 18.04 | sma-crossover ✓ |
 | 6 | 08-16 16:32 | 16.60 | -13.83 | 2.74 | 18.04 | rsi-mean-reversion ✓ |
 | 7 | 08-16 18:14 | 16.60 | -13.83 | 2.74 | 18.04 | — |
+| 8 | 08-16 21:14 | 16.60 | -13.83 | 0.03 | 12.48 | venue-arb ✓ |
+| 9 | 08-16 21:15 | 16.60 | -13.83 | 0.03 | -0.49 | — |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

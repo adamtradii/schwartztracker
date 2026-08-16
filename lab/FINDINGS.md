@@ -71,6 +71,27 @@ Added N-minute resampling to ReplayAdapter and ran the SMA grid on real windows 
 
 **Applied:** REAL_EXPERIMENTS now evaluates sma-crossover at 15-min resample with 20/60 L/S — reporting the strategy at its least-bad known configuration, honestly labeled breakeven.
 
+## 2026-08-16 21:00Z — cycle 3
+
+### 6. Simulator calibration: the fake markets were 13x too jumpy and far too forgiving — fixed
+
+In plain English: our practice simulator was letting the prediction-market strategies win money that real markets would never give up. We measured the simulator with the exact same yardstick we used on real Polymarket prices and rebuilt it until the numbers lined up.
+
+Before vs after (25-min periods, vs real targets):
+
+| Statistic | Old sim | New sim | Real |
+|---|---|---|---|
+| How often prices move ≥1c | 75.8% | 8.0% | 5.8% |
+| Avg next move after a ≥5c jump | −0.72c | −0.20c | −0.33c |
+| How often a ≥5c jump reverses | 57.6% | 43.6% | 36.5% |
+
+Consequences, exactly as predicted:
+- **extreme-fade collapsed from +7,719%/month to −10%/month** in the simulator — now agreeing with the real-data verdict that fading price jumps loses to costs.
+- **venue-arb collapsed from ~+1,000%/month to +2.1%/month** after venue disagreement was scaled to realistic levels (each venue's stream must itself look like a real market; cross-venue gaps now come mostly from stale quotes). +2%/month with 4.5% drawdown is finally a *believable* number — but it remains simulation-only until real two-venue data exists, and its parameters were last tuned against the old, too-generous sim (retune queued).
+- **Goal v2 scoreboard is now honest: all four systems currently FAIL** the 3%/month bar. Venue-arb is closest (+2.1%, drawdown well inside the cap).
+
+Residual mismatches are documented in sim-calibration-check.js (sim slightly over-reverts at 5c, under-reverts at 8c; move frequency a bit high). None of them favor the strategies systematically.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

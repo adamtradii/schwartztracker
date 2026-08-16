@@ -15,7 +15,7 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Calibrate the prediction simulator to real measurements** (URGENT — do before trusting any sim prediction number): goal-v2 baseline shows extreme-fade making +7,719%/month in sim while the real reversion study (#2) measured reversion BELOW round-trip costs. The sim's overshoot events are far too frequent/large/reliable. Recalibrate generatePredictionBars against the measured real numbers (mean next-move after ≥5c real moves = −0.33c, ~35% reversion rate; sim should reproduce approximately those conditional statistics), then re-run the reversion study ON SIM DATA to verify sim ≈ real. This makes the simulator MORE realistic (allowed and required); document before/after in FINDINGS.md. Expect sim prediction returns to collapse toward reality.
+- [ ] **Retune venue-arb against the calibrated simulator**: its params were last tuned on the old too-generous sim. Retune (params + risk profile in goal-profiles.json) against the calibrated sim, aiming to push its +2.1%/month median past 3% while keeping drawdown well under 15%. It is the closest system to a goal pass; label remains simulation-only.
 - [ ] **Expiry-drift study** (Adam's #4a — PROMOTED: Polymarket is Adam's actionable venue): data/real/polymarket-markets-snapshot.csv.gz has 9.5k real markets with end dates and current prices. Measure: do prices cluster toward 0/1 as expiry approaches (cross-sectionally)? Is there a systematic pattern in the final days worth trading? Note honestly that this is a cross-sectional snapshot, not a panel — state what it can and cannot support.
 - [ ] **New-market mispricing study** (Adam's #4b — PROMOTED): same snapshot has created_date. Compare spread/price behavior of young markets (<7 days old) vs mature ones. If young markets look sloppier (wider spreads, prices further from round numbers), design a follow-up strategy test. The snapshot has best_bid/best_ask — real spread data; use it.
 - [ ] **Polymarket cost model** (NEW): before any strategy is judged "tradeable on Polymarket," build the realistic cost stack from the snapshot's own bid/ask data: median spread by price level and liquidity tier, plus taker dynamics. Replace the flat 0.5c-slip assumption in prediction-real evaluations with spreads measured from this data. Every prediction finding should then be re-stated net of measured costs.
@@ -30,6 +30,7 @@ Never suggest circumventing state restrictions.
 
 ## Done
 
+- [x] 2026-08-16 (cycle 3) Simulator calibration: fake markets were 13x too jumpy and 2-5x too mean-reverting; after calibration extreme-fade fell +7,719% → −10%/month and venue-arb +1,010% → +2.1%/month — all four systems now honestly fail goal v2, venue-arb closest → FINDINGS.md #6
 - [x] 2026-08-16 (cycle 2) Bar resampling: 5/15-min bars move real SMA results from −3.4% median to ~breakeven (+0.4% best config, 5/10 windows positive) — no edge, but no cost bleed; longer windows queued → FINDINGS.md #5
 - [x] 2026-08-16 (cycle 1) Stocks mean-reversion at 1-min: NOT tradeable — gross ≈ 0 bps after k-sigma moves, net −6 to −10 bps, negative in 10/10 windows across full k×H grid → FINDINGS.md #4
 

@@ -9,5 +9,10 @@
   "sma-crossover": {
     "fast": 7,
     "slow": 50
+  },
+  "venue-arb": {
+    "entrySpread": 0.03,
+    "exitSpread": 0.005,
+    "stopSpread": 0.12
   }
 }

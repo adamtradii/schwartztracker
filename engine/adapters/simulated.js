@@ -53,25 +53,29 @@ export function generateStockBars(symbol, { bars = 780, startPrice, seed = 42, i
   return out;
 }
 
+// Calibrated 2026-08-16 against real Polymarket measurements (see
+// engine/experiments/sim-calibration-check.js for targets and method).
+// The original generator moved 13x too often and reverted 2-5x too reliably,
+// which inflated fade-strategy results by orders of magnitude.
 export function generatePredictionBars(symbol, { bars = 780, startPrice, seed = 42, intervalMs = 60_000, startTime } = {}) {
   const rng = mulberry32(hashCode(symbol) ^ seed ^ 0x9e3779b9);
   let p = startPrice ?? 0.15 + rng() * 0.7;      // contract price in dollars (0-1)
   const trueProb = Math.min(Math.max(p + (rng() - 0.5) * 0.3, 0.03), 0.97);
-  let overshoot = 0; // transient overreaction component that decays back out
+  let overshoot = 0; // transient post-jump component: + retraces, − continues
   const t0 = startTime ?? Date.UTC(2026, 0, 5, 14, 30);
   const out = [];
   for (let i = 0; i < bars; i++) {
     const open = p;
-    // Slow convergence toward "true" probability + noise
-    p += (trueProb - p) * 0.002 + gaussian(rng) * 0.006;
-    // News jump: sharp repricing. Markets overreact — part of the move is a
-    // transient overshoot that retraces over the following ~30 bars.
-    if (rng() < 0.006) {
+    // Weak convergence toward "true" probability + calm noise
+    p += (trueProb - p) * 0.0002 + gaussian(rng) * 0.0011;
+    // News jump (~1% of 25-min periods). Real markets: only ~35% of big moves
+    // retrace next period; the rest drift on. Model both outcomes.
+    if (rng() < 0.0004) {
       const jump = (rng() - 0.45) * 0.2;
       p += jump;
-      overshoot += jump * 0.45;
+      overshoot += rng() < 0.3 ? jump * 0.65 : -jump * 0.12;
     }
-    const retrace = overshoot * 0.06;
+    const retrace = overshoot * 0.027; // ~50% of overshoot unwinds per 25 min
     p -= retrace;
     overshoot -= retrace;
     p = Math.min(Math.max(p, 0.01), 0.99);
@@ -101,8 +105,11 @@ export function generateVenuePair(event, opts = {}) {
       if (staleFor > 0) {
         staleFor--;
       } else {
+        // Venue disagreement scaled to the calibrated base volatility: each
+        // venue's stream must itself pass for a real market series, so
+        // cross-venue spreads come mostly from stale quotes, not free noise.
         if (rng() < 0.008) staleFor = 5 + Math.floor(rng() * 25);
-        noise = noise * 0.9 + gaussian(rng) * 0.004;
+        noise = noise * 0.9 + gaussian(rng) * 0.0008;
         lastClose = Math.min(Math.max(b.close + noise, 0.01), 0.99);
       }
       return { ...b, open: lastClose, high: lastClose, low: lastClose, close: lastClose };
