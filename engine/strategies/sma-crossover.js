@@ -3,7 +3,7 @@ import { sma } from "../lib/indicators.js";
 // Momentum: go long when the fast SMA crosses above the slow SMA, exit on the
 // cross back down. Classic trend-following on intraday bars.
 
-export const DEFAULTS = { fast: 9, slow: 21 };
+export const DEFAULTS = { fast: 9, slow: 21, allowShort: false };
 
 export function makeSmaCrossover(params = {}) {
   const p = { ...DEFAULTS, ...params };
@@ -24,11 +24,13 @@ export function makeSmaCrossover(params = {}) {
       const crossedUp = fastPrev <= slowPrev && fastNow > slowNow;
       const crossedDown = fastPrev >= slowPrev && fastNow < slowNow;
 
-      if (!position && crossedUp) {
-        return { action: "enter", side: "long", note: `SMA${p.fast}>${p.slow} cross up` };
+      if (crossedUp) {
+        if (position?.side === "short") return { action: "exit", note: `SMA${p.fast}>${p.slow} cross up` };
+        if (!position) return { action: "enter", side: "long", note: `SMA${p.fast}>${p.slow} cross up` };
       }
-      if (position?.side === "long" && crossedDown) {
-        return { action: "exit", note: `SMA${p.fast}<${p.slow} cross down` };
+      if (crossedDown) {
+        if (position?.side === "long") return { action: "exit", note: `SMA${p.fast}<${p.slow} cross down` };
+        if (!position && p.allowShort) return { action: "enter", side: "short", note: `SMA${p.fast}<${p.slow} cross down` };
       }
       return null;
     },

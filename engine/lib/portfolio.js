@@ -2,8 +2,9 @@
 // a "position" can be shares of a stock or contracts on a prediction market.
 
 export class Portfolio {
-  constructor(startingCash) {
+  constructor(startingCash, { margin = 1 } = {}) {
     this.startingCash = startingCash;
+    this.margin = margin;       // intraday buying power multiple (1 = cash account)
     this.cash = startingCash;
     this.positions = new Map(); // symbol -> { symbol, qty, entryPrice, entryTime, side }
     this.trades = [];           // closed trades
@@ -14,9 +15,21 @@ export class Portfolio {
     return [...this.positions.keys()];
   }
 
+  // Total gross exposure (longs + shorts) at entry prices, for the margin check.
+  grossExposure() {
+    let e = 0;
+    for (const p of this.positions.values()) e += p.qty * p.entryPrice;
+    return e;
+  }
+
   open(symbol, side, qty, price, time, meta = {}) {
     const cost = qty * price;
-    if (side === "long" && cost > this.cash) return null;
+    // Margin accounts borrow: cash may go negative, but GROSS exposure
+    // (longs + shorts alike) is capped at margin × current equity. Interest
+    // is ignored (intraday horizon).
+    const prices = {};
+    for (const p of this.positions.values()) prices[p.symbol] = p.entryPrice;
+    if (this.grossExposure() + cost > this.margin * this.equity(prices)) return null;
     if (side === "long") this.cash -= cost;
     // Shorts credit cash on entry; margin is not modeled — risk limits cap exposure instead.
     if (side === "short") this.cash += cost;

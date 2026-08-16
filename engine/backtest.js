@@ -23,10 +23,10 @@ export async function runBacktest(opts) {
   } = opts;
 
   const strategy = getStrategy(strategyName, opts.params);
-  const adapter = new SimulatedAdapter({ market, seed });
+  const adapter = new SimulatedAdapter({ market, seed, symbols: opts.symbols });
   await adapter.connect();
 
-  const portfolio = new Portfolio(cash);
+  const portfolio = new Portfolio(cash, { margin: opts.margin ?? 1 });
   const risk = new RiskManager(opts.risk);
   const engine = new Engine({ adapter, strategy, portfolio, risk, log: quiet ? () => {} : console.log });
 

@@ -53,10 +53,10 @@ const SPACES = {
   },
 };
 
-async function evaluate(market, strategy, params, seeds) {
+async function evaluate(market, strategy, params, seeds, extra = {}) {
   const runs = [];
   for (const seed of seeds) {
-    const state = await runBacktest({ market, strategy, params, bars: BARS, cash: CASH, seed, quiet: true, noWrite: true });
+    const state = await runBacktest({ market, strategy, params, bars: BARS, cash: CASH, seed, quiet: true, noWrite: true, ...extra });
     runs.push(state.stats);
   }
   const rets = runs.map((r) => r.totalReturnPct).sort((a, b) => a - b);
@@ -130,6 +130,37 @@ async function tune(strategyName, historyLen) {
   return { strategy: strategyName, improved: false, from: baseline.score, to: best.result.score };
 }
 
+// ── Goal evaluation ──
+// /goal: turn $500 into $1500 per system within 72 simulated trading hours.
+// Judged on median final equity across seeds using the aggressive profiles in
+// engine/goal-profiles.json (separate from the conservative default configs).
+const GOAL_PATH = path.join(path.dirname(new URL(import.meta.url).pathname), "goal-profiles.json");
+
+export async function evaluateGoal(seeds = EVAL_SEEDS) {
+  const goal = JSON.parse(fs.readFileSync(GOAL_PATH, "utf8"));
+  const out = [];
+  for (const [strategy, prof] of Object.entries(goal.profiles)) {
+    const eqs = [];
+    for (const seed of seeds) {
+      const st = await runBacktest({
+        market: prof.market, strategy, params: prof.params, risk: prof.risk,
+        margin: prof.margin, symbols: prof.symbols,
+        bars: goal.bars, cash: goal.cash, seed, quiet: true, noWrite: true,
+      });
+      eqs.push(st.stats.finalEquity);
+    }
+    eqs.sort((a, b) => a - b);
+    const median = eqs[Math.floor(eqs.length / 2)];
+    out.push({
+      strategy, market: prof.market,
+      medianEquity: median, worstEquity: eqs[0], bestEquity: eqs.at(-1),
+      seedsPassed: eqs.filter((e) => e >= goal.target).length, seedsTotal: eqs.length,
+      pass: median >= goal.target,
+    });
+  }
+  return { target: goal.target, cash: goal.cash, bars: goal.bars, results: out, allPass: out.every((r) => r.pass) };
+}
+
 function writeReport(history) {
   const latest = history.at(-1);
   const lines = [
@@ -144,6 +175,16 @@ function writeReport(history) {
   ];
   for (const r of latest.results) {
     lines.push(`| ${r.strategy} | ${r.market} | ${r.medianReturnPct.toFixed(2)}% | ${r.worstReturnPct.toFixed(2)}% | ${r.bestReturnPct.toFixed(2)}% | ${r.medianDrawdownPct.toFixed(2)}% | ${r.meanWinRate.toFixed(1)}% | ${r.totalTrades} | ${r.score.toFixed(2)} |`);
+  }
+  if (latest.goal) {
+    const g = latest.goal;
+    lines.push("", `## Goal: $${g.cash} → $${g.target} in 72 simulated hours (${g.bars} bars) — ${g.allPass ? "✅ ALL SYSTEMS PASS" : "❌ NOT YET"}`, "");
+    lines.push("| Strategy | Median equity | Worst seed | Best seed | Seeds ≥ target | Pass |");
+    lines.push("|---|---|---|---|---|---|");
+    for (const r of g.results) {
+      lines.push(`| ${r.strategy} | $${r.medianEquity.toFixed(0)} | $${r.worstEquity.toFixed(0)} | $${r.bestEquity.toFixed(0)} | ${r.seedsPassed}/${r.seedsTotal} | ${r.pass ? "✅" : "❌"} |`);
+    }
+    lines.push("", "_Goal profiles (engine/goal-profiles.json) are deliberately aggressive: 4x intraday margin on stocks, 15-30% risk per trade. This level of risk is how accounts blow up in real markets — it exists to chase the 3x-in-72h goal in simulation, not as a recommendation._");
   }
   lines.push("", "## Tuned parameters", "", "```json", JSON.stringify(loadTunedParams(), null, 2), "```", "");
   lines.push("## Score history (median-return robustness score per run)", "");
@@ -186,7 +227,14 @@ async function main() {
     console.log(`[lab] ${exp.strategy.padEnd(20)} median ${r.medianReturnPct.toFixed(2).padStart(7)}%  worst ${r.worstReturnPct.toFixed(2).padStart(7)}%  score ${r.score.toFixed(2)}`);
   }
 
-  const record = { ts: new Date().toISOString(), cash: CASH, bars: BARS, results, tuned };
+  console.log(`\n[lab] goal check: $500 → $1500 in 4320 bars (median across ${EVAL_SEEDS.length} seeds)`);
+  const goal = await evaluateGoal();
+  for (const r of goal.results) {
+    console.log(`[lab] ${r.strategy.padEnd(20)} median $${r.medianEquity.toFixed(0).padStart(6)}  worst $${r.worstEquity.toFixed(0).padStart(6)}  seeds ${r.seedsPassed}/${r.seedsTotal}  ${r.pass ? "✅" : "❌"}`);
+  }
+  console.log(`[lab] goal status: ${goal.allPass ? "✅ ALL SYSTEMS PASS" : "❌ not yet"}`);
+
+  const record = { ts: new Date().toISOString(), cash: CASH, bars: BARS, results, tuned, goal };
   fs.appendFileSync(histPath, JSON.stringify(record) + "\n");
   history.push(record);
   writeReport(history);

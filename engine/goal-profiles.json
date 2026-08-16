@@ -1,0 +1,34 @@
+{
+  "target": 1500,
+  "cash": 500,
+  "bars": 4320,
+  "note": "Goal: $500 -> $1500 within 72 simulated trading hours (4320 one-minute bars), judged on median final equity across seeds. Profiles are aggressive by design; margin 4 = intraday stock margin, margin 2 for the arb book = both venue legs fully collateralized.",
+  "profiles": {
+    "sma-crossover": {
+      "market": "stocks",
+      "margin": 4,
+      "symbols": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16"],
+      "params": { "allowShort": true, "fast": 20, "slow": 60 },
+      "risk": { "riskPerTradePct": 25, "maxPositionPct": 120, "maxPositions": 10, "dailyLossLimitPct": 50, "stopLossPct": 4, "takeProfitPct": 20 }
+    },
+    "rsi-mean-reversion": {
+      "market": "stocks",
+      "margin": 4,
+      "symbols": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16"],
+      "params": { "mode": "momentum", "allowShort": true, "rsiPeriod": 21, "breakout": 60, "fade": 48, "stopLossPct": 2.5, "takeProfitPct": 8 },
+      "risk": { "riskPerTradePct": 15, "maxPositionPct": 80, "maxPositions": 8, "dailyLossLimitPct": 30 }
+    },
+    "extreme-fade": {
+      "market": "prediction",
+      "margin": 1,
+      "symbols": ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10"],
+      "params": { "minJump": 0.04, "minStretch": 0.05 },
+      "risk": { "riskPerTradePct": 30, "maxPositionPct": 60, "maxPositions": 10, "dailyLossLimitPct": 50 }
+    },
+    "venue-arb": {
+      "market": "prediction-arb",
+      "margin": 2,
+      "risk": { "riskPerTradePct": 15, "maxPositionPct": 100, "maxPositions": 8, "dailyLossLimitPct": 30 }
+    }
+  }
+}
