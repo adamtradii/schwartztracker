@@ -1,0 +1,9 @@
+{
+  "rsi-mean-reversion": {
+    "rsiPeriod": 21,
+    "oversold": 20,
+    "recovered": 50,
+    "stopLossPct": 2.5,
+    "takeProfitPct": 4
+  }
+}

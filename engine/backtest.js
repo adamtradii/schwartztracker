@@ -22,7 +22,7 @@ export async function runBacktest(opts) {
     quiet = false,
   } = opts;
 
-  const strategy = getStrategy(strategyName);
+  const strategy = getStrategy(strategyName, opts.params);
   const adapter = new SimulatedAdapter({ market, seed });
   await adapter.connect();
 
@@ -60,10 +60,12 @@ export async function runBacktest(opts) {
   }
 
   const state = engine.state();
-  const outPath = path.join(process.cwd(), "data", "state.json");
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify(state, null, 2));
-  if (!quiet) console.log(`\nState written to data/state.json — run \`npm run dev\` to view the dashboard.`);
+  if (!opts.noWrite) {
+    const outPath = path.join(process.cwd(), "data", "state.json");
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, JSON.stringify(state, null, 2));
+    if (!quiet) console.log(`\nState written to data/state.json — run \`npm run dev\` to view the dashboard.`);
+  }
   return state;
 }
 

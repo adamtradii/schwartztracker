@@ -85,12 +85,41 @@ export function generatePredictionBars(symbol, { bars = 780, startPrice, seed = 
   return out;
 }
 
+// Two venues quoting the same event: venue prices track the base series with
+// venue-specific AR(1) noise, and each venue occasionally goes stale for a
+// stretch (a slow market maker) — which is exactly when real cross-venue
+// spreads open up.
+export function generateVenuePair(event, opts = {}) {
+  const base = generatePredictionBars(event, opts);
+  const out = {};
+  for (const venue of ["A", "B"]) {
+    const rng = mulberry32(hashCode(event + "@" + venue) ^ (opts.seed ?? 42));
+    let noise = 0;
+    let staleFor = 0;
+    let lastClose = base[0].close;
+    out[venue] = base.map((b) => {
+      if (staleFor > 0) {
+        staleFor--;
+      } else {
+        if (rng() < 0.008) staleFor = 5 + Math.floor(rng() * 25);
+        noise = noise * 0.9 + gaussian(rng) * 0.004;
+        lastClose = Math.min(Math.max(b.close + noise, 0.01), 0.99);
+      }
+      return { ...b, open: lastClose, high: lastClose, low: lastClose, close: lastClose };
+    });
+  }
+  return out;
+}
+
 export class SimulatedAdapter {
   constructor({ market = "stocks", symbols, seed = 42, intervalMs = 60_000 } = {}) {
     this.market = market;
-    this.symbols = symbols ?? (market === "prediction"
-      ? ["FED-CUT-SEP", "CPI-ABOVE-3", "SHUTDOWN-OCT"]
-      : ["AAPL", "TSLA", "NVDA", "SPY"]);
+    this.symbols = symbols ?? {
+      prediction: ["FED-CUT-SEP", "CPI-ABOVE-3", "SHUTDOWN-OCT"],
+      "prediction-arb": ["FED-CUT-SEP@A", "FED-CUT-SEP@B", "CPI-ABOVE-3@A", "CPI-ABOVE-3@B"],
+      stocks: ["AAPL", "TSLA", "NVDA", "SPY"],
+    }[market];
+    if (!this.symbols) throw new Error(`Unknown simulated market "${market}"`);
     this.seed = seed;
     this.intervalMs = intervalMs;
     this.name = `simulated-${market}`;
@@ -99,6 +128,15 @@ export class SimulatedAdapter {
   }
 
   async connect() {
+    if (this.market === "prediction-arb") {
+      const events = [...new Set(this.symbols.map((s) => s.replace(/@[AB]$/, "")))];
+      for (const e of events) {
+        const pair = generateVenuePair(e, { bars: 100_000, seed: this.seed, intervalMs: this.intervalMs });
+        this._series.set(`${e}@A`, pair.A);
+        this._series.set(`${e}@B`, pair.B);
+      }
+      return;
+    }
     const gen = this.market === "prediction" ? generatePredictionBars : generateStockBars;
     for (const s of this.symbols) {
       this._series.set(s, gen(s, { bars: 100_000, seed: this.seed, intervalMs: this.intervalMs }));
@@ -120,7 +158,7 @@ export class SimulatedAdapter {
 
   // Simulated fill at close price with slippage + commission-ish fee.
   async placeOrder({ symbol, side, qty, price }) {
-    const slip = this.market === "prediction" ? 0.005 : price * 0.0003;
+    const slip = this.market.startsWith("prediction") ? 0.005 : price * 0.0003;
     const fill = side === "buy" ? price + slip : price - slip;
     return { symbol, side, qty, fillPrice: fill, status: "filled" };
   }

@@ -43,13 +43,14 @@ export class RiskManager {
 
   // Size a position from equity, price, and stop distance.
   // Prediction-market contracts are priced 0-1, so qty comes out in contracts naturally.
-  size(equity, price, stopPrice) {
+  size(equity, price, stopPrice, { fractional = false } = {}) {
     const riskDollars = equity * (this.cfg.riskPerTradePct / 100);
     const perUnitRisk = Math.abs(price - stopPrice);
     if (perUnitRisk <= 0) return 0;
-    let qty = Math.floor(riskDollars / perUnitRisk);
-    const maxQty = Math.floor((equity * (this.cfg.maxPositionPct / 100)) / price);
-    qty = Math.min(qty, maxQty);
+    let qty = Math.min(riskDollars / perUnitRisk, (equity * (this.cfg.maxPositionPct / 100)) / price);
+    // Fractional shares to 3 decimals, but skip dust positions under $5.
+    qty = fractional ? Math.floor(qty * 1000) / 1000 : Math.floor(qty);
+    if (fractional && qty * price < 5) return 0;
     return Math.max(qty, 0);
   }
 

@@ -19,5 +19,7 @@ export function parseArgs(argv) {
 }
 
 export function pickDefaultStrategy(market) {
-  return market === "prediction" ? "extreme-fade" : "sma-crossover";
+  if (market === "prediction") return "extreme-fade";
+  if (market === "prediction-arb") return "venue-arb";
+  return "sma-crossover";
 }

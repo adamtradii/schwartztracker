@@ -31,6 +31,8 @@ engine/
   core.js               bar loop: exits → strategy signal → risk gate → order
   backtest.js           replays bars through the engine, prints stats
   paper.js              live loop + state server on :8787 for the dashboard
+  lab.js                research lab: multi-seed evaluation + parameter tuning
+  params.json           tuned parameters (written by the lab, read by strategies)
   lib/
     indicators.js       SMA, EMA, RSI, VWAP, Bollinger, stddev
     portfolio.js        cash, positions, closed trades, equity curve, stats
@@ -39,6 +41,7 @@ engine/
     sma-crossover.js       stocks — 9/21 SMA momentum
     rsi-mean-reversion.js  stocks — buy oversold dips at the lower Bollinger band
     extreme-fade.js        prediction — fade news overreactions, exit on retrace
+    venue-arb.js           prediction — cross-venue arbitrage on diverging quotes
   adapters/
     simulated.js        deterministic synthetic data, zero keys required
     alpaca.js           US stocks (paper by default)
@@ -47,6 +50,12 @@ src/                    React dashboard (Vite + Recharts)
 ```
 
 Everything is priced in dollars end to end — a stock share or a 0–1 prediction contract flows through the same portfolio, risk, and strategy machinery.
+
+## The research lab
+
+`npm run lab` evaluates every strategy on a **$500 simulated bankroll** across 10 seeds of 6,000 one-minute bars, and scores each on robustness (median return + worst-seed return − drawdown penalty, so one lucky seed can't hide tail risk). `npm run lab -- --tune <strategy|auto>` additionally random-searches that strategy's parameter space and keeps the winner only if it beats the current baseline by a real margin. Results append to `lab/history.jsonl` and `lab/REPORT.md`, which are committed so the experiment log survives across sessions.
+
+The `venue-arb` strategy trades cross-venue prediction-market arbitrage: the simulator quotes the same event on two venues (`EVENT@A` / `EVENT@B`) with venue-specific noise and occasional stale quotes; when the venues disagree by more than round-trip costs, the strategy shorts the rich venue and longs the cheap one, closing both legs on convergence.
 
 ## Risk management
 

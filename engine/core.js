@@ -51,7 +51,7 @@ export class Engine {
     }
 
     // 2. Strategy signal
-    const signal = this.strategy.onBar({ symbol, bars, closes: bars.map((b) => b.close), position });
+    const signal = this.strategy.onBar({ symbol, bars, closes: bars.map((b) => b.close), position, all: this.history });
     if (!signal) return;
 
     if (signal.action === "exit" && position) {
@@ -65,7 +65,9 @@ export class Engine {
 
       const equity = this.portfolio.equity(this.lastPrices);
       const { stopPrice, targetPrice } = this.risk.stops(signal.side, price, signal);
-      const qty = this.risk.size(equity, price, stopPrice);
+      // Stocks allow fractional shares (Alpaca supports them); prediction
+      // contracts are whole units.
+      const qty = this.risk.size(equity, price, stopPrice, { fractional: this.adapter.market === "stocks" });
       if (qty <= 0) return;
 
       const orderSide = signal.side === "long" ? "buy" : "sell";
