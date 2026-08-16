@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-16T16:32:13.565Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-16T18:14:04.194Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -21,16 +21,18 @@ _Real historical data committed under `data/real/`: 1-min index bars (S&P 500, D
 | rsi-mean-reversion | stocks-real | -4.67% | -6.93% | -2.83% | 22.8% | 3266 |
 | extreme-fade | prediction-real | -0.64% | -8.94% | 8.10% | 36.2% | 81 |
 
-## Goal: $500 → $1500 in 72 simulated hours (4320 bars) — ✅ ALL SYSTEMS PASS
+## Goal: 3%+/month (stretch 5%+) with max drawdown ≤ 15% — ❌ NOT YET
 
-| Strategy | Median equity | Worst seed | Best seed | Seeds ≥ target | Pass |
-|---|---|---|---|---|---|
-| sma-crossover | $2117 | $1627 | $3374 | 10/10 | ✅ |
-| rsi-mean-reversion | $2949 | $1963 | $3733 | 10/10 | ✅ |
-| extreme-fade | $2872 | $723 | $4050 | 6/10 | ✅ |
-| venue-arb | $1917 | $770 | $3690 | 7/10 | ✅ |
+_$500 per system, measured over ~1 month per run. "real" = real historical windows; "sim" = simulator only (no real data available at the cadence needed). Pass needs the return target AND the drawdown cap together._
 
-_Goal profiles (engine/goal-profiles.json) are deliberately aggressive: 4x intraday margin on stocks, 15-30% risk per trade. This level of risk is how accounts blow up in real markets — it exists to chase the 3x-in-72h goal in simulation, not as a recommendation._
+| Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | Status |
+|---|---|---|---|---|---|---|---|
+| sma-crossover | real | -3.78% | -14.47% | 0.02% | 9.2% | 15.6% | ❌ |
+| rsi-mean-reversion | real | -6.74% | -17.49% | 6.89% | 12.6% | 21.2% | ❌ |
+| extreme-fade | sim | 7718.76% | 5015.44% | 43857.32% | 12.4% | 15.6% | 🚀 stretch |
+| venue-arb | sim | 2938.60% | 1197.41% | 5482.06% | 7.9% | 11.2% | 🚀 stretch |
+
+_The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk settings. Push returns higher only while the drawdown cap holds._
 
 ## Tuned parameters
 
@@ -60,5 +62,6 @@ _Goal profiles (engine/goal-profiles.json) are deliberately aggressive: 4x intra
 | 4 | 08-16 09:32 | 9.79 | -15.32 | 2.74 | 18.04 | — |
 | 5 | 08-16 12:31 | 16.60 | -15.32 | 2.74 | 18.04 | sma-crossover ✓ |
 | 6 | 08-16 16:32 | 16.60 | -13.83 | 2.74 | 18.04 | rsi-mean-reversion ✓ |
+| 7 | 08-16 18:14 | 16.60 | -13.83 | 2.74 | 18.04 | — |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

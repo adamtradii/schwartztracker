@@ -1,34 +1,46 @@
 {
-  "target": 1500,
+  "mode": "sustainable",
   "cash": 500,
-  "bars": 4320,
-  "note": "Goal: $500 -> $1500 within 72 simulated trading hours (4320 one-minute bars), judged on median final equity across seeds. Profiles are aggressive by design; margin 4 = intraday stock margin, margin 2 for the arb book = both venue legs fully collateralized.",
+  "monthlyTargetPct": 3,
+  "stretchTargetPct": 5,
+  "maxDrawdownPct": 15,
+  "note": "Goal v2 (set 2026-08-16): 3%/month minimum with max drawdown <= 15%, stretch 5%+/month. Measured over ~1 month per run: real 30-day windows where real data exists, 43200 simulated 1-min bars otherwise. Pass = median return >= target AND median max drawdown <= cap. Risk settings are deliberately moderate — the old 3x-in-72h profiles (git history) required ruin-level risk and are retired.",
   "profiles": {
     "sma-crossover": {
-      "market": "stocks",
-      "margin": 4,
-      "symbols": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16"],
+      "market": "stocks-long-real",
+      "kind": "real",
+      "bars": 2880,
+      "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "margin": 2,
       "params": { "allowShort": true, "fast": 20, "slow": 60 },
-      "risk": { "riskPerTradePct": 25, "maxPositionPct": 120, "maxPositions": 10, "dailyLossLimitPct": 50, "stopLossPct": 4, "takeProfitPct": 20 }
+      "risk": { "riskPerTradePct": 2, "maxPositionPct": 60, "maxPositions": 4, "dailyLossLimitPct": 3, "stopLossPct": 2, "takeProfitPct": 6 }
     },
     "rsi-mean-reversion": {
-      "market": "stocks",
-      "margin": 4,
-      "symbols": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16"],
-      "params": { "mode": "momentum", "allowShort": true, "rsiPeriod": 21, "breakout": 60, "fade": 48, "stopLossPct": 2.5, "takeProfitPct": 8 },
-      "risk": { "riskPerTradePct": 15, "maxPositionPct": 80, "maxPositions": 8, "dailyLossLimitPct": 30 }
+      "market": "stocks-long-real",
+      "kind": "real",
+      "bars": 2880,
+      "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "margin": 2,
+      "params": { "mode": "momentum", "allowShort": true, "rsiPeriod": 21, "breakout": 60, "fade": 48, "stopLossPct": 2, "takeProfitPct": 6 },
+      "risk": { "riskPerTradePct": 2, "maxPositionPct": 60, "maxPositions": 4, "dailyLossLimitPct": 3 }
     },
     "extreme-fade": {
       "market": "prediction",
+      "kind": "sim",
+      "bars": 43200,
+      "seeds": [1, 2, 3, 5, 8, 13, 21, 34, 55, 99],
       "margin": 1,
       "symbols": ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10"],
       "params": { "minJump": 0.04, "minStretch": 0.05 },
-      "risk": { "riskPerTradePct": 30, "maxPositionPct": 60, "maxPositions": 10, "dailyLossLimitPct": 50 }
+      "risk": { "riskPerTradePct": 4, "maxPositionPct": 25, "maxPositions": 6, "dailyLossLimitPct": 3 }
     },
     "venue-arb": {
       "market": "prediction-arb",
+      "kind": "sim",
+      "bars": 43200,
+      "seeds": [1, 2, 3, 5, 8, 13, 21, 34, 55, 99],
       "margin": 2,
-      "risk": { "riskPerTradePct": 15, "maxPositionPct": 100, "maxPositions": 8, "dailyLossLimitPct": 30 }
+      "risk": { "riskPerTradePct": 4, "maxPositionPct": 50, "maxPositions": 8, "dailyLossLimitPct": 3 }
     }
   }
 }

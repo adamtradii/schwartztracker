@@ -162,29 +162,39 @@ export async function evaluateRealData() {
 // engine/goal-profiles.json (separate from the conservative default configs).
 const GOAL_PATH = path.join(path.dirname(new URL(import.meta.url).pathname), "goal-profiles.json");
 
-export async function evaluateGoal(seeds = EVAL_SEEDS) {
+// Goal v2 ("sustainable"): median monthly return >= monthlyTargetPct AND
+// median max drawdown <= maxDrawdownPct, per system, measured over ~1 month
+// (real 30-day windows where real data exists, 43200 sim bars otherwise).
+// stretch flag marks systems clearing stretchTargetPct.
+export async function evaluateGoal() {
   const goal = JSON.parse(fs.readFileSync(GOAL_PATH, "utf8"));
+  const median = (xs) => xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)];
   const out = [];
   for (const [strategy, prof] of Object.entries(goal.profiles)) {
-    const eqs = [];
-    for (const seed of seeds) {
+    const rets = [], dds = [];
+    for (const seed of prof.seeds) {
       const st = await runBacktest({
         market: prof.market, strategy, params: prof.params, risk: prof.risk,
-        margin: prof.margin, symbols: prof.symbols,
-        bars: goal.bars, cash: goal.cash, seed, quiet: true, noWrite: true,
+        margin: prof.margin, symbols: prof.symbols, resample: prof.resample,
+        bars: prof.bars, cash: goal.cash, seed, quiet: true, noWrite: true,
       });
-      eqs.push(st.stats.finalEquity);
+      rets.push(st.stats.totalReturnPct);
+      dds.push(st.stats.maxDrawdownPct);
     }
-    eqs.sort((a, b) => a - b);
-    const median = eqs[Math.floor(eqs.length / 2)];
+    const medRet = median(rets), medDD = median(dds);
     out.push({
-      strategy, market: prof.market,
-      medianEquity: median, worstEquity: eqs[0], bestEquity: eqs.at(-1),
-      seedsPassed: eqs.filter((e) => e >= goal.target).length, seedsTotal: eqs.length,
-      pass: median >= goal.target,
+      strategy, market: prof.market, kind: prof.kind,
+      medianMonthlyPct: medRet, worstMonthlyPct: Math.min(...rets), bestMonthlyPct: Math.max(...rets),
+      medianDrawdownPct: medDD, worstDrawdownPct: Math.max(...dds),
+      pass: medRet >= goal.monthlyTargetPct && medDD <= goal.maxDrawdownPct,
+      stretch: medRet >= goal.stretchTargetPct && medDD <= goal.maxDrawdownPct,
     });
   }
-  return { target: goal.target, cash: goal.cash, bars: goal.bars, results: out, allPass: out.every((r) => r.pass) };
+  return {
+    mode: goal.mode, cash: goal.cash,
+    monthlyTargetPct: goal.monthlyTargetPct, stretchTargetPct: goal.stretchTargetPct, maxDrawdownPct: goal.maxDrawdownPct,
+    results: out, allPass: out.every((r) => r.pass),
+  };
 }
 
 function writeReport(history) {
@@ -213,13 +223,15 @@ function writeReport(history) {
   }
   if (latest.goal) {
     const g = latest.goal;
-    lines.push("", `## Goal: $${g.cash} → $${g.target} in 72 simulated hours (${g.bars} bars) — ${g.allPass ? "✅ ALL SYSTEMS PASS" : "❌ NOT YET"}`, "");
-    lines.push("| Strategy | Median equity | Worst seed | Best seed | Seeds ≥ target | Pass |");
-    lines.push("|---|---|---|---|---|---|");
+    lines.push("", `## Goal: ${g.monthlyTargetPct}%+/month (stretch ${g.stretchTargetPct}%+) with max drawdown ≤ ${g.maxDrawdownPct}% — ${g.allPass ? "✅ ALL SYSTEMS PASS" : "❌ NOT YET"}`, "");
+    lines.push(`_$${g.cash} per system, measured over ~1 month per run. "real" = real historical windows; "sim" = simulator only (no real data available at the cadence needed). Pass needs the return target AND the drawdown cap together._`, "");
+    lines.push("| Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | Status |");
+    lines.push("|---|---|---|---|---|---|---|---|");
     for (const r of g.results) {
-      lines.push(`| ${r.strategy} | $${r.medianEquity.toFixed(0)} | $${r.worstEquity.toFixed(0)} | $${r.bestEquity.toFixed(0)} | ${r.seedsPassed}/${r.seedsTotal} | ${r.pass ? "✅" : "❌"} |`);
+      const status = r.stretch ? "🚀 stretch" : r.pass ? "✅ pass" : "❌";
+      lines.push(`| ${r.strategy} | ${r.kind} | ${r.medianMonthlyPct.toFixed(2)}% | ${r.worstMonthlyPct.toFixed(2)}% | ${r.bestMonthlyPct.toFixed(2)}% | ${r.medianDrawdownPct.toFixed(1)}% | ${r.worstDrawdownPct.toFixed(1)}% | ${status} |`);
     }
-    lines.push("", "_Goal profiles (engine/goal-profiles.json) are deliberately aggressive: 4x intraday margin on stocks, 15-30% risk per trade. This level of risk is how accounts blow up in real markets — it exists to chase the 3x-in-72h goal in simulation, not as a recommendation._");
+    lines.push("", "_The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk settings. Push returns higher only while the drawdown cap holds._");
   }
   lines.push("", "## Tuned parameters", "", "```json", JSON.stringify(loadTunedParams(), null, 2), "```", "");
   lines.push("## Score history (median-return robustness score per run)", "");
@@ -268,10 +280,11 @@ async function main() {
     console.log(`[lab] ${r.strategy.padEnd(20)} ${r.market.padEnd(16)} median ${r.medianReturnPct.toFixed(2).padStart(7)}%  worst ${r.worstReturnPct.toFixed(2).padStart(7)}%  trades ${r.totalTrades}`);
   }
 
-  console.log(`\n[lab] goal check: $500 → $1500 in 4320 bars (median across ${EVAL_SEEDS.length} seeds)`);
+  console.log(`\n[lab] goal check: ${""}3%+/month (stretch 5%+), max drawdown ≤ 15%, ~1 month per run`);
   const goal = await evaluateGoal();
   for (const r of goal.results) {
-    console.log(`[lab] ${r.strategy.padEnd(20)} median $${r.medianEquity.toFixed(0).padStart(6)}  worst $${r.worstEquity.toFixed(0).padStart(6)}  seeds ${r.seedsPassed}/${r.seedsTotal}  ${r.pass ? "✅" : "❌"}`);
+    const status = r.stretch ? "🚀" : r.pass ? "✅" : "❌";
+    console.log(`[lab] ${r.strategy.padEnd(20)} (${r.kind})  monthly ${r.medianMonthlyPct.toFixed(2).padStart(7)}%  dd ${r.medianDrawdownPct.toFixed(1).padStart(5)}%  ${status}`);
   }
   console.log(`[lab] goal status: ${goal.allPass ? "✅ ALL SYSTEMS PASS" : "❌ not yet"}`);
 
@@ -282,4 +295,6 @@ async function main() {
   console.log(`\n[lab] run #${history.length} recorded → lab/REPORT.md`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((e) => { console.error(e); process.exit(1); });
+}
