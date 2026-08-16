@@ -132,8 +132,92 @@ function ingestPolymarket(srcFile) {
   }
 }
 
+// Long windows for slow strategies: 30 trading days at 15-min cadence.
+// Pre-registered start dates (fixed before looking at results).
+const LONG_STARTS = [
+  "2012-02-01", "2012-09-04", "2013-04-01", "2013-11-04", "2014-06-02",
+  "2015-01-05", "2015-08-03", "2016-04-04", "2017-02-01", "2018-03-01",
+];
+const LONG_BARS = 30 * 96; // ~30 days × 96 15-min bars/day (near-24h index CFDs)
+
+function resample(bars, n) {
+  const out = [];
+  for (let i = 0; i + n <= bars.length; i += n) {
+    const c = bars.slice(i, i + n);
+    out.push({
+      time: c.at(-1).time, open: c[0].open,
+      high: Math.max(...c.map((b) => b.high)), low: Math.min(...c.map((b) => b.low)),
+      close: c.at(-1).close, volume: c.reduce((a, b) => a + b.volume, 0),
+    });
+  }
+  return out;
+}
+
+function ingestLongWindows(srcDir) {
+  console.log("[ingest] stocks-long: 30-day windows at 15-min cadence");
+  for (let w = 0; w < LONG_STARTS.length; w++) {
+    const startTs = Date.parse(LONG_STARTS[w] + "T00:00:00Z");
+    const year = +LONG_STARTS[w].slice(0, 4);
+    const symbols = {};
+    for (const inst of INSTRUMENTS) {
+      const oneMin = [];
+      for (const y of [year, year + 1]) {
+        const f = path.join(srcDir, inst, `DAT_ASCII_${inst}_M1_${y}.csv`);
+        if (!fs.existsSync(f)) continue;
+        for (const b of histdataBars(f)) {
+          if (b.time < startTs) continue;
+          oneMin.push(b);
+          if (oneMin.length >= LONG_BARS * 15) break;
+        }
+        if (oneMin.length >= LONG_BARS * 15) break;
+      }
+      const bars = resample(oneMin, 15).slice(0, LONG_BARS).map(round);
+      if (bars.length >= LONG_BARS * 0.8) symbols[inst] = bars;
+      else console.warn(`  ! ${inst} long window ${w}: only ${bars.length} bars, skipping`);
+    }
+    writeGz(path.join(OUT_DIR, `stocks-long-w${w}.json.gz`), {
+      source: "histdata.com 1-min via github.com/FutureSharks/financial-data, resampled to 15-min",
+      start: LONG_STARTS[w], cadenceMinutes: 15, symbols,
+    });
+  }
+}
+
+// Daily bars over the full 2010-2018 span, for multi-day holding strategies.
+function ingestDaily(srcDir) {
+  console.log("[ingest] stocks-daily: full-history daily bars");
+  const symbols = {};
+  for (const inst of INSTRUMENTS) {
+    const days = new Map(); // yyyy-mm-dd -> {open,high,low,close,volume,time}
+    for (let y = 2010; y <= 2018; y++) {
+      const f = path.join(srcDir, inst, `DAT_ASCII_${inst}_M1_${y}.csv`);
+      if (!fs.existsSync(f)) continue;
+      for (const b of histdataBars(f)) {
+        const day = new Date(b.time).toISOString().slice(0, 10);
+        const d = days.get(day);
+        if (!d) days.set(day, { time: b.time, open: b.open, high: b.high, low: b.low, close: b.close, volume: b.volume });
+        else {
+          d.high = Math.max(d.high, b.high); d.low = Math.min(d.low, b.low);
+          d.close = b.close; d.volume += b.volume; d.time = b.time;
+        }
+      }
+    }
+    symbols[inst] = [...days.values()].sort((a, b) => a.time - b.time).map(round);
+    console.log(`  ${inst}: ${symbols[inst].length} daily bars`);
+  }
+  writeGz(path.join(OUT_DIR, `stocks-daily-w0.json.gz`), {
+    source: "histdata.com 1-min via github.com/FutureSharks/financial-data, aggregated to daily, 2010-2018",
+    cadenceMinutes: 1440, symbols,
+  });
+}
+
 const args = parseArgs(process.argv.slice(2));
 fs.mkdirSync(OUT_DIR, { recursive: true });
-ingestStocks(args.stocksSrc ?? STOCKS_SRC);
-ingestPolymarket(args.polySrc ?? POLY_SRC);
+if (args.only === "long") { ingestLongWindows(args.stocksSrc ?? STOCKS_SRC); }
+else if (args.only === "daily") { ingestDaily(args.stocksSrc ?? STOCKS_SRC); }
+else {
+  ingestStocks(args.stocksSrc ?? STOCKS_SRC);
+  ingestPolymarket(args.polySrc ?? POLY_SRC);
+  ingestLongWindows(args.stocksSrc ?? STOCKS_SRC);
+  ingestDaily(args.stocksSrc ?? STOCKS_SRC);
+}
 console.log("[ingest] done");

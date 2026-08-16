@@ -9,8 +9,16 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 
+// market name -> committed file prefix under data/real/
+const PREFIXES = {
+  "stocks-real": "stocks-w",
+  "stocks-long-real": "stocks-long-w",   // 30-day windows, 15-min bars
+  "stocks-daily-real": "stocks-daily-w", // 2010-2018, daily bars
+  "prediction-real": "prediction-w",
+};
+
 export function realWindowCount(market) {
-  const prefix = market === "prediction-real" ? "prediction-w" : "stocks-w";
+  const prefix = PREFIXES[market] ?? "stocks-w";
   const dir = path.join(process.cwd(), "data", "real");
   if (!fs.existsSync(dir)) return 0;
   return fs.readdirSync(dir).filter((f) => f.startsWith(prefix) && f.endsWith(".json.gz")).length;
@@ -40,7 +48,7 @@ export class ReplayAdapter {
     this.window = window;
     this.resample = resample;
     // Strategies see the same market kind as the simulated equivalents.
-    this.strategyMarket = market === "prediction-real" ? "prediction" : "stocks";
+    this.strategyMarket = market.startsWith("prediction") ? "prediction" : "stocks";
     this.name = `replay-${market}-w${window}`;
     this.intervalMs = intervalMs ?? 60_000;
     this._series = new Map();
@@ -48,7 +56,7 @@ export class ReplayAdapter {
   }
 
   async connect() {
-    const prefix = this.market === "prediction-real" ? "prediction-w" : "stocks-w";
+    const prefix = PREFIXES[this.market] ?? "stocks-w";
     const file = path.join(process.cwd(), "data", "real", `${prefix}${this.window}.json.gz`);
     if (!fs.existsSync(file)) {
       throw new Error(`Missing real data window ${file}. Run: node engine/data/ingest-real.js (sources must be cloned under /workspace)`);
