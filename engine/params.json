@@ -3,8 +3,8 @@
     "rsiPeriod": 21,
     "oversold": 20,
     "recovered": 50,
-    "stopLossPct": 1.2,
-    "takeProfitPct": 2
+    "stopLossPct": 0.8,
+    "takeProfitPct": 4
   },
   "sma-crossover": {
     "fast": 7,

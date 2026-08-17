@@ -1,13 +1,13 @@
 # Lab Report
 
-_Last run: 2026-08-17T12:46:45.875Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-17T16:32:04.888Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
 | Strategy | Market | Median return | Worst seed | Best seed | Median DD | Win rate | Trades | Score |
 |---|---|---|---|---|---|---|---|---|
 | sma-crossover | stocks | 13.09% | 8.38% | 22.94% | 2.72% | 33.3% | 2619 | 16.60 |
-| rsi-mean-reversion | stocks | -6.11% | -12.01% | -3.80% | 6.82% | 20.7% | 315 | -13.83 |
+| rsi-mean-reversion | stocks | -5.82% | -10.86% | -3.58% | 6.18% | 18.7% | 390 | -12.80 |
 | extreme-fade | prediction | 0.37% | -0.19% | 1.23% | 0.11% | 50.0% | 11 | 0.25 |
 | venue-arb | prediction-arb | -0.08% | -0.34% | 0.43% | 0.18% | 18.3% | 27 | -0.29 |
 
@@ -42,8 +42,8 @@ _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk
     "rsiPeriod": 21,
     "oversold": 20,
     "recovered": 50,
-    "stopLossPct": 1.2,
-    "takeProfitPct": 2
+    "stopLossPct": 0.8,
+    "takeProfitPct": 4
   },
   "sma-crossover": {
     "fast": 7,
@@ -80,5 +80,6 @@ _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk
 | 11 | 08-17 04:32 | 16.60 | -13.83 | 0.25 | -0.58 | extreme-fade ✓ |
 | 12 | 08-17 08:33 | 16.60 | -13.83 | 0.25 | -0.29 | venue-arb ✓ |
 | 13 | 08-17 12:46 | 16.60 | -13.83 | 0.25 | -0.29 | sma-crossover |
+| 14 | 08-17 16:32 | 16.60 | -12.80 | 0.25 | -0.29 | rsi-mean-reversion ✓ |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

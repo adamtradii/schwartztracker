@@ -151,6 +151,19 @@ I rebuilt the prediction test windows the honest way: only liquid markets (≥$5
 
 Important honest caveat about the data: our real Polymarket history is sparse — about 26 snapshots per market at ~25-minute spacing. A dense per-minute or tick feed could reveal faster patterns this data can't see. So the accurate statement is "no bettable fade edge exists in the data available to us," not "no such edge can possibly exist." Getting denser Polymarket data (needs the network opened or a bigger dataset) is the only way to check further.
 
+## 2026-08-17 16:29Z — cycle 8
+
+### 11. New markets are NOT sloppily priced — no maker edge there
+
+Tested whether brand-new Polymarket markets are looser than established ones, across 9,550 real markets bucketed by age:
+
+- Median spread is **0.10c at every age** from under a day to 90 days old. New markets are just as tight as mature ones.
+- Focusing on genuinely uncertain markets (priced 20-80c, where mispricing would matter) and controlling for liquidity: young markets (<7 days) are **the same or tighter** than mature ones (in the mid-liquidity tier, young 1.0c vs mature 2.0c — the opposite of the hypothesis).
+
+**Plain-English bottom line:** Polymarket's automated market-makers quote new markets just as tightly as old ones, so there's no "the market is sloppy because it's new" opportunity to harvest. Another honest dead end — and a useful one: it says the venue is efficiently made, which is exactly why the simple price-pattern edges keep failing.
+
+This closes Adam's prediction-market idea list (#4a expiry drift and #4b new-market mispricing both negative). The prediction venue is efficient at the timescales and data we can measure; no simple structural edge survives. What remains untested there would need dense (tick-level) data or genuine information advantage on specific events — neither is a systematic algorithm.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
