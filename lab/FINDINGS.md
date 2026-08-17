@@ -177,6 +177,23 @@ Goal v3: median ≥1%/month, max drawdown ≤8%, and ≥80% of test months posit
 
 The income framing actually flatters the arb (its steadiness — 80% positive months, small drawdowns — is exactly the income profile) and correctly damns the rest. But the one system that fits is the one we cannot validate on real data. Honest state: no real-data system produces steady income; the only steady performer is unverifiable in this sandbox.
 
+## 2026-08-17 20:29Z — cycle 9
+
+### 12. Slow trend-following works — but only as a worse version of buy-and-hold
+
+Tested slow strategies where they finally get enough signals to matter. The classic "golden cross" (buy when the 50-day average crosses above the 200-day, sell when it crosses back) is the first real-data stock config that isn't a loser:
+
+- **9 years of daily data (S&P), unleveraged:** +37% total over 2010-2018, just 9 trades, 8.7% max drawdown, profit factor 3.15. Genuinely positive, genuinely calm — the solid result.
+- **30-day windows:** too short to judge a 50/200 fairly (few crossovers per window → high variance); unleveraged it lands around breakeven (−1.6% median, 40% windows positive, 5.1% drawdown). The +3% I first saw used 2x leverage across four indices — not appropriate for an income goal, so discarded. The daily result above is the honest one.
+
+**But here's the honest benchmark that matters.** Over the exact same 9 years, simply **buying and holding the S&P made +109%** — three times more — with a 21% max drawdown. So the golden-cross strategy captured about a third of the return while cutting the drawdown by more than half. That's the real, well-known nature of trend-following: **it's a drawdown-reduction tool, not a money-making edge.** It doesn't beat the market; it gives you a smoother, smaller slice of it.
+
+And for the income goal specifically: +37% over 9 years is about **3.6% per year** — which is *below* what US Treasury bills pay right now for zero risk. So the one stock strategy that "works" on real data still loses to a savings account.
+
+**Bottom line for stocks:** there is no day-trading income edge here. The honest options are (a) buy and hold an index — more return, bigger drawdowns, no algorithm needed; or (b) T-bills/money-market — less return, no drawdowns. Every strategy we built lands *between* those two and beats *neither*. The algorithm adds nothing you couldn't get more simply.
+
+**Applied:** the sma-crossover goal profile is switched to the honest best (50/200 long-only) so the scoreboard reflects the least-bad real config, still short of the 80%-consistency income bar.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

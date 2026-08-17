@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-17T18:23:57.568Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-17T20:33:14.217Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -27,7 +27,7 @@ _$500 per system, measured over ~1 month per run. "real" = real historical windo
 
 | Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | % months positive | Status |
 |---|---|---|---|---|---|---|---|---|
-| sma-crossover | real | -3.78% | -14.47% | 0.02% | 9.2% | 15.6% | 10% | ❌ |
+| sma-crossover | real | -1.56% | -8.54% | 5.32% | 5.1% | 10.0% | 40% | ❌ |
 | rsi-mean-reversion | real | -6.74% | -17.49% | 6.89% | 12.6% | 21.2% | 20% | ❌ |
 | extreme-fade | sim | -14.91% | -23.35% | 10.41% | 20.3% | 24.4% | 20% | ❌ |
 | venue-arb | sim | 4.75% | -6.43% | 13.87% | 4.7% | 6.4% | 80% | 🚀 stretch |
@@ -82,5 +82,6 @@ _Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, sm
 | 13 | 08-17 12:46 | 16.60 | -13.83 | 0.25 | -0.29 | sma-crossover |
 | 14 | 08-17 16:32 | 16.60 | -12.80 | 0.25 | -0.29 | rsi-mean-reversion ✓ |
 | 15 | 08-17 18:23 | 16.60 | -12.80 | 0.25 | -0.29 | — |
+| 16 | 08-17 20:33 | 16.60 | -12.80 | 0.25 | -0.29 | venue-arb |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

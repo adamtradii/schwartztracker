@@ -15,7 +15,6 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Slow strategies on long windows** (Adam's #2): data is READY — stocks-long-real (ten 30-day windows, 15-min bars) and stocks-daily-real (2010-2018 daily) are committed. Test SMA/momentum configs with multi-day holds where they finally get enough signals: SMA 20/60 and 50/200 on stocks-long-real; SMA 10/50, 20/100 and RSI-momentum on stocks-daily-real. Costs: 6 bps round trip. Report per-window medians and whether anything is positive in ≥7/10 windows (daily = single 9-year run; report per-year returns instead).
 - [ ] **Portfolio combination test** (Adam's #3): build engine/experiments/portfolio-study.js — combine the per-system equity curves (equal capital split, using each system's best-known real-data config; sim-only for venue-arb, labeled as such) and measure combined return, drawdown, and whether diversification helps vs the best single system. Use real-data results where they exist.
 - [ ] **Re-ingest prediction windows without selection bias**: change ingest-real.js market selection from top-range to seeded-random among usable markets, re-run reversion study on committed windows, confirm it matches the full-sample sign.
 - [ ] **Fade threshold sweep on real data**: extreme-fade on prediction-real with minJump ∈ {5c, 8c} only; compare vs costs. If nothing clears 1c round-trip, record that fading mids at snapshot cadence is untradeable and mark the strategy sim-only.
@@ -26,6 +25,7 @@ Never suggest circumventing state restrictions.
 
 ## Done
 
+- [x] 2026-08-17 (cycle 9) Slow strategies: golden cross (SMA 50/200) is the first positive real-data stock config (+3% median on 30-day windows, +37%/9y daily, 8.7% maxDD) BUT buy-and-hold made +109% same period, and 3.6%/yr < T-bills — trend-following is a drawdown-reducer, not an edge; no stock income edge exists → FINDINGS.md #12
 - [x] 2026-08-17 (cycle 8) New-market mispricing study: young markets priced just as tightly as mature (0.1c spread at every age; young ≤ mature even among uncertain markets) — no maker/sloppiness edge; closes Adam's prediction idea list (#4a and #4b both negative) → FINDINGS.md #11
 - [x] 2026-08-17 (cycle 7) Fade re-judged on UNBIASED liquid windows (prediction-fair-real, random selection, liq≥$5k, measured 0.1c cost): only 7-18 trades across 10 windows, ~0% median — no bettable edge; extreme-fade RETIRED as real-data candidate (sparse ~25-min data is a caveat, not a rescue) → FINDINGS.md #10
 - [x] 2026-08-17 (cycle 6) Polymarket cost model: real spreads 0.1c deep / 0.3c mid / 2c thin (old 0.5c assumption 5x too harsh); net of measured cost the fade only clears on ≥8c moves in deep markets (+0.05 to +1.2c/trade, 46-90 trades, 31-39% win) — thin high-variance edge, not a robust pass; ReplayAdapter cost corrected → FINDINGS.md #9

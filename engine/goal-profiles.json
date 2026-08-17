@@ -23,19 +23,19 @@
         8,
         9
       ],
-      "margin": 2,
+      "margin": 1,
       "params": {
-        "allowShort": true,
-        "fast": 20,
-        "slow": 60
+        "allowShort": false,
+        "fast": 50,
+        "slow": 200
       },
       "risk": {
         "riskPerTradePct": 2,
         "maxPositionPct": 60,
         "maxPositions": 4,
-        "dailyLossLimitPct": 3,
-        "stopLossPct": 2,
-        "takeProfitPct": 6
+        "dailyLossLimitPct": 100,
+        "stopLossPct": 3,
+        "takeProfitPct": 10
       }
     },
     "rsi-mean-reversion": {
