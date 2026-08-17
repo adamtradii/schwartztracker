@@ -210,9 +210,59 @@ function ingestDaily(srcDir) {
   });
 }
 
+// Fair prediction windows: seeded-random selection among LIQUID markets
+// (joined to the snapshot for liquidity), replacing the earlier top-range
+// selection that biased toward trending markets (FINDINGS #2/#9). Writes NEW
+// files prediction-fair-w*.json.gz; the original prediction-w* are left intact
+// for audit.
+function mulberry32b(seed) {
+  return function () { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function parseCsvB(text) {
+  const rows = []; let row = [], field = "", inQ = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (inQ) { if (c === '"' && text[i + 1] === '"') { field += '"'; i++; } else if (c === '"') inQ = false; else field += c; }
+    else if (c === '"') inQ = true; else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; } else if (c !== "\r") field += c; }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+function ingestPredictionFair(srcFile) {
+  console.log("[ingest] prediction-fair: liquidity-filtered, seeded-random market selection");
+  const snap = parseCsvB(zlib.gunzipSync(fs.readFileSync(path.join(OUT_DIR, "polymarket-markets-snapshot.csv.gz"))).toString());
+  const HH = Object.fromEntries(snap[0].map((h, i) => [h, i]));
+  const liq = new Map();
+  for (const r of snap.slice(1)) if (r.length >= snap[0].length) liq.set(r[HH.market_id], parseFloat(r[HH.liquidity]) || 0);
+
+  const lines = fs.readFileSync(srcFile, "utf8").trim().split("\n").slice(1);
+  const byMkt = new Map();
+  for (const l of lines) { const [id, outcome, price, ts] = l.split(","); if (outcome !== "Yes") continue; if (!byMkt.has(id)) byMkt.set(id, []); byMkt.get(id).push({ time: Date.parse(ts), close: +price }); }
+
+  const usable = [];
+  for (const [id, pts] of byMkt) {
+    if ((liq.get(id) ?? 0) < 5000) continue;        // liquid markets only (real spreads ~0.1-0.3c)
+    pts.sort((a, b) => a.time - b.time);
+    const closes = pts.map((p) => p.close);
+    if (pts.length >= 20 && Math.min(...closes) > 0.03 && Math.max(...closes) < 0.97 && Math.max(...closes) - Math.min(...closes) >= 0.02) {
+      usable.push({ id, bars: pts.map((p) => ({ time: p.time, open: p.close, high: p.close, low: p.close, close: p.close, volume: 1 })) });
+    }
+  }
+  // Seeded shuffle — NO ranking by range (removes the trend bias).
+  const rng = mulberry32b(20260817);
+  for (let i = usable.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [usable[i], usable[j]] = [usable[j], usable[i]]; }
+  console.log(`  ${usable.length} liquid usable markets (liquidity ≥ $5k)`);
+  const WINDOWS = 10, PER = 8;
+  for (let w = 0; w < WINDOWS; w++) {
+    const symbols = {};
+    for (let i = 0; i < PER; i++) { const m = usable[w * PER + i]; if (m) symbols[`PM-${m.id}`] = m.bars; }
+    writeGz(path.join(OUT_DIR, `prediction-fair-w${w}.json.gz`), { source: "Polymarket Yes prices, liquid markets (liq≥$5k), seeded-random selection — unbiased", cadenceMinutes: 25, symbols });
+  }
+}
+
 const args = parseArgs(process.argv.slice(2));
 fs.mkdirSync(OUT_DIR, { recursive: true });
-if (args.only === "long") { ingestLongWindows(args.stocksSrc ?? STOCKS_SRC); }
+if (args.only === "predictionFair" || args.only === "prediction-fair") { ingestPredictionFair(args.polySrc ?? POLY_SRC); }
+else if (args.only === "long") { ingestLongWindows(args.stocksSrc ?? STOCKS_SRC); }
 else if (args.only === "daily") { ingestDaily(args.stocksSrc ?? STOCKS_SRC); }
 else {
   ingestStocks(args.stocksSrc ?? STOCKS_SRC);

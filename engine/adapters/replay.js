@@ -15,6 +15,7 @@ const PREFIXES = {
   "stocks-long-real": "stocks-long-w",   // 30-day windows, 15-min bars
   "stocks-daily-real": "stocks-daily-w", // 2010-2018, daily bars
   "prediction-real": "prediction-w",
+  "prediction-fair-real": "prediction-fair-w", // liquidity-filtered, unbiased selection
 };
 
 export function realWindowCount(market) {

@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-17T08:33:11.259Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-17T12:46:45.875Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -19,7 +19,7 @@ _Real historical data committed under `data/real/`: 1-min index bars (S&P 500, D
 |---|---|---|---|---|---|---|
 | sma-crossover | stocks-real | 0.40% | -1.68% | 3.05% | 45.3% | 97 |
 | rsi-mean-reversion | stocks-real | -4.67% | -6.93% | -2.83% | 22.8% | 3266 |
-| extreme-fade | prediction-real | 1.00% | -10.83% | 8.53% | 40.9% | 62 |
+| extreme-fade | prediction-fair-real | 0.00% | -1.79% | 4.54% | 39.8% | 18 |
 
 ## Goal: 3%+/month (stretch 5%+) with max drawdown ≤ 15% — ❌ NOT YET
 
@@ -79,5 +79,6 @@ _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk
 | 10 | 08-17 00:34 | 16.60 | -13.83 | 0.03 | -0.58 | rsi-mean-reversion |
 | 11 | 08-17 04:32 | 16.60 | -13.83 | 0.25 | -0.58 | extreme-fade ✓ |
 | 12 | 08-17 08:33 | 16.60 | -13.83 | 0.25 | -0.29 | venue-arb ✓ |
+| 13 | 08-17 12:46 | 16.60 | -13.83 | 0.25 | -0.29 | sma-crossover |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

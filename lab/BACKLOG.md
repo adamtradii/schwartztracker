@@ -15,7 +15,6 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Fix prediction-window selection bias, then re-judge the large-move fade** (cycle-6 left the fade at "thin, high-variance edge on ≥8c moves in deep markets"; the committed windows are selection-biased toward continuation per FINDINGS #2, so they understate reversion): re-ingest prediction windows as seeded-random among liquid markets (join to snapshot for liquidity ≥ $5k), keep only deep/mid-liquidity markets, then re-run the ≥8c fade net of 0.1-0.2c cost across the new windows. Decide definitively: is there a real, bettable large-move fade edge or not? If yes, build a goal profile; if no, mark extreme-fade sim-only and retire it from real-data hope.
 - [ ] **New-market mispricing study** (Adam's #4b): snapshot has created_date. Compare spread/price behavior of young markets (<7 days old) vs mature ones using real bid/ask. If young markets look sloppier, design a follow-up strategy test.
 - [ ] **Slow strategies on long windows** (Adam's #2): data is READY — stocks-long-real (ten 30-day windows, 15-min bars) and stocks-daily-real (2010-2018 daily) are committed. Test SMA/momentum configs with multi-day holds where they finally get enough signals: SMA 20/60 and 50/200 on stocks-long-real; SMA 10/50, 20/100 and RSI-momentum on stocks-daily-real. Costs: 6 bps round trip. Report per-window medians and whether anything is positive in ≥7/10 windows (daily = single 9-year run; report per-year returns instead).
 - [ ] **Portfolio combination test** (Adam's #3): build engine/experiments/portfolio-study.js — combine the per-system equity curves (equal capital split, using each system's best-known real-data config; sim-only for venue-arb, labeled as such) and measure combined return, drawdown, and whether diversification helps vs the best single system. Use real-data results where they exist.
@@ -28,6 +27,7 @@ Never suggest circumventing state restrictions.
 
 ## Done
 
+- [x] 2026-08-17 (cycle 7) Fade re-judged on UNBIASED liquid windows (prediction-fair-real, random selection, liq≥$5k, measured 0.1c cost): only 7-18 trades across 10 windows, ~0% median — no bettable edge; extreme-fade RETIRED as real-data candidate (sparse ~25-min data is a caveat, not a rescue) → FINDINGS.md #10
 - [x] 2026-08-17 (cycle 6) Polymarket cost model: real spreads 0.1c deep / 0.3c mid / 2c thin (old 0.5c assumption 5x too harsh); net of measured cost the fade only clears on ≥8c moves in deep markets (+0.05 to +1.2c/trade, 46-90 trades, 31-39% win) — thin high-variance edge, not a robust pass; ReplayAdapter cost corrected → FINDINGS.md #9
 - [x] 2026-08-17 (cycle 5) Expiry-drift study: ~90% of near-expiry markets already near-certain (drift already priced); only ~21 liquid uncertain near-expiry markets at a time; KEY SURPRISE — real spreads are 0.1-0.4c, our 0.5c slip assumption 5-10x too pessimistic in liquid markets → FINDINGS.md #8
 - [x] 2026-08-17 (cycle 4) Venue-arb retuned on calibrated sim: 4c entry gaps required (2-3c churn loses), 10% risk optimal — +5.21%/month median, all seeds within DD cap; FIRST goal-v2 pass (stretch, sim-only) → FINDINGS.md #7

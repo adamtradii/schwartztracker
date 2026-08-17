@@ -138,6 +138,19 @@ So trading the big, liquid markets costs about a tenth of a cent round-trip — 
 
 **Applied:** ReplayAdapter prediction cost corrected from 0.5c to 0.1c per side (measured deep-market value); real-data fade config updated to the least-bad large-move setting. venue-arb re-tuned by the auto-tuner this cycle still passes (+4.75%/month, 4.7% drawdown).
 
+## 2026-08-17 12:29Z — cycle 7
+
+### 10. The fade, judged fairly, is not a bettable edge — verdict: retired from real-data hope
+
+I rebuilt the prediction test windows the honest way: only liquid markets (≥$5k, where real spreads are ~0.1c), selected at random instead of cherry-picking the most volatile ones (which had quietly biased earlier tests toward trending markets). Then re-ran the large-move fade net of the real 0.1c cost:
+
+- Across all 10 unbiased windows, the fade found only **7 to 18 trades total** and netted **~0% median** (best window +4.5%, worst −2.9%, positive in 4/10).
+- Translation: once you remove the selection bias and restrict to markets you could actually trade cheaply, there simply aren't enough "big jump then reversal" opportunities to build anything on, and the few that exist wash out to nothing.
+
+**Verdict: extreme-fade is retired as a real-data candidate.** It survives only in the (now-honest) simulator, where it also loses. This closes the prediction-market *price-pattern* thread: neither the overreaction fade nor the expiry drift is a real, bettable edge in the data we can reach.
+
+Important honest caveat about the data: our real Polymarket history is sparse — about 26 snapshots per market at ~25-minute spacing. A dense per-minute or tick feed could reveal faster patterns this data can't see. So the accurate statement is "no bettable fade edge exists in the data available to us," not "no such edge can possibly exist." Getting denser Polymarket data (needs the network opened or a bigger dataset) is the only way to check further.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
