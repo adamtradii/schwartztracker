@@ -104,6 +104,19 @@ With the simulator no longer flattering anyone, venue-arb was retuned from scrat
 
 Standing caveat, unchanged: this is the one system with no real-data validation possible in this sandbox (no public two-venue tick data). Its numbers are the calibrated simulator's word. The stale-quote mechanism that generates the gaps is plausible but unverified — treat this as "promising pending real data," never as proven.
 
+## 2026-08-17 04:29Z — cycle 5
+
+### 8. Expiry drift: mostly already priced in — but the study surprised us about costs
+
+2,393 real Polymarket markets bucketed by time to expiry (single snapshot — this shows how markets *look*, and cannot measure returns over time):
+
+- **The "drift to certainty" is real but already done**: ~90% of markets within 3 days of expiry already sit below 5c or above 95c. Only ~8% are still genuinely uncertain. There's no obvious free lunch in "ride prices toward 0/1 at the end" — by the final days, the riding is over.
+- **A small live hunting ground exists**: at snapshot time, 24 near-expiry markets were still uncertain, and 21 of those were liquid and tight — enough to matter for a $500 account, too few to scale.
+- **The genuinely important discovery is about trading costs**: median bid-ask spreads are **0.1c** in active near-expiry markets and 0.3-0.4c even in long-dated ones. Our flat 0.5c-per-side slippage assumption is **5-10x too pessimistic for liquid markets.** Every prediction-market idea we labeled "right sign, loses to costs" (especially the fade, FINDINGS #2) must be re-judged against measured spreads. If real round-trip cost in liquid markets is ~0.2c, a −0.33c average bounce after 5c moves flips from untradeable to potentially tradeable.
+- Near-expiry markets are also the most active (86-98% moved ≥1c that day vs ~38% of long-dated ones) — activity and tight spreads live in the same place.
+
+**Applied/next:** the cost-model item (next in queue) is now the highest-value experiment in the sandbox: measure spread by liquidity tier, restrict the reversion study to tight-spread markets, and restate fade economics net of *measured* costs.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

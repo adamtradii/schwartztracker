@@ -14,5 +14,11 @@
     "entrySpread": 0.04,
     "exitSpread": 0.01,
     "stopSpread": 0.12
+  },
+  "extreme-fade": {
+    "trend": 40,
+    "minJump": 0.04,
+    "minStretch": 0.08,
+    "stopDist": 0.05
   }
 }
