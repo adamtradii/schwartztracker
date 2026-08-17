@@ -11,9 +11,9 @@
     "slow": 50
   },
   "venue-arb": {
-    "entrySpread": 0.04,
-    "exitSpread": 0.01,
-    "stopSpread": 0.12
+    "entrySpread": 0.05,
+    "exitSpread": 0.005,
+    "stopSpread": 0.2
   },
   "extreme-fade": {
     "trend": 40,

@@ -85,11 +85,13 @@ export class ReplayAdapter {
     return out;
   }
 
-  // Same fill model as the simulator: close price plus slippage. Real
-  // prediction prices here are mids, so the 0.5c slip stands in for
-  // crossing half the typical spread.
+  // Fill model = close price plus slippage. For prediction-real, slippage is
+  // half of the MEASURED real Polymarket spread (cycle-6 poly-cost-model.js):
+  // deep markets 0.1c, mid 0.3c median. The committed windows are the most
+  // active/liquid markets, so 0.2c round trip (0.1c per side) is the honest
+  // cost — the old 0.5c was ~5x too pessimistic. Stocks: 3 bps per side.
   async placeOrder({ symbol, side, qty, price }) {
-    const slip = this.market === "prediction-real" ? 0.005 : price * 0.0003;
+    const slip = this.market === "prediction-real" ? 0.001 : price * 0.0003;
     const fill = side === "buy" ? price + slip : price - slip;
     return { symbol, side, qty, fillPrice: fill, status: "filled" };
   }

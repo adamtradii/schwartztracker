@@ -143,7 +143,9 @@ const REAL_EXPERIMENTS = [
   // breakeven, not an edge; 1-min bled −3.4% median).
   { market: "stocks-real", strategy: "sma-crossover", params: { fast: 20, slow: 60, allowShort: true }, resample: 15 },
   { market: "stocks-real", strategy: "rsi-mean-reversion", params: { mode: "momentum", allowShort: true, rsiPeriod: 21, breakout: 60, fade: 48, stopLossPct: 2.5, takeProfitPct: 8 } },
-  { market: "prediction-real", strategy: "extreme-fade", params: { trend: 6, minJump: 0.03, minStretch: 0.03 } },
+  // cycle-6: net of measured real spreads (0.1-0.3c), only large moves clear
+  // costs; minJump 0.05 is least-bad on the (selection-biased) real windows.
+  { market: "prediction-real", strategy: "extreme-fade", params: { trend: 6, minJump: 0.05, minStretch: 0.04 } },
 ];
 const REAL_WINDOWS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 

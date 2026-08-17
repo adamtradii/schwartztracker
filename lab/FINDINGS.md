@@ -117,6 +117,27 @@ Standing caveat, unchanged: this is the one system with no real-data validation 
 
 **Applied/next:** the cost-model item (next in queue) is now the highest-value experiment in the sandbox: measure spread by liquidity tier, restrict the reversion study to tight-spread markets, and restate fade economics net of *measured* costs.
 
+## 2026-08-17 08:29Z — cycle 6
+
+### 9. Real Polymarket cost model: cheaper than we assumed, but the fade still isn't a robust edge
+
+Measured real spreads across 9,550 markets, by how much money is in each market:
+
+| Liquidity tier | Markets | Median spread (= round-trip cost) |
+|---|---|---|
+| Deep (≥$50k) | 8,010 | **0.10c** |
+| Mid ($5k-50k) | 1,442 | 0.30c |
+| Thin (<$5k) | 98 | 2.00c |
+
+So trading the big, liquid markets costs about a tenth of a cent round-trip — our old assumption of half a cent was 5x too harsh. Good news. But when I re-ran the fade idea **market-by-market, subtracting each market's real spread**, the honest verdict is only a small improvement:
+
+- Fading moves of 3-5c: still **loses** net of real cost (−1.1 to −1.4c per trade) even in liquid markets.
+- Fading only **big moves (≥8c) in deep markets**: barely **positive** — +0.05c/trade (mid+deep) to +1.2c/trade (deep only) — but on just 46-90 trades with a 31-39% win rate, meaning a few big reversals carry it. That's a thin, high-variance edge, not a reliable one.
+
+**Plain-English bottom line:** cheaper trading costs move the fade from "clearly loses" to "roughly breakeven, maybe slightly positive if you only fade the biggest jumps in the most liquid markets." On the real 30-day windows with the corrected 0.2c cost, the best fade config now shows +1.0% median (was −0.6%) but still only 6/10 windows positive with a −10.8% worst window. Not a goal pass, and too variable to bet on — but no longer a dead end.
+
+**Applied:** ReplayAdapter prediction cost corrected from 0.5c to 0.1c per side (measured deep-market value); real-data fade config updated to the least-bad large-move setting. venue-arb re-tuned by the auto-tuner this cycle still passes (+4.75%/month, 4.7% drawdown).
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
