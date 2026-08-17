@@ -92,6 +92,18 @@ Consequences, exactly as predicted:
 
 Residual mismatches are documented in sim-calibration-check.js (sim slightly over-reverts at 5c, under-reverts at 8c; move frequency a bit high). None of them favor the strategies systematically.
 
+## 2026-08-17 00:29Z — cycle 4
+
+### 7. Arbitrage retuned on the honest simulator: first goal pass (+5.2%/month, sim-only)
+
+With the simulator no longer flattering anyone, venue-arb was retuned from scratch (18-config grid, verified on all 10 seeds, monthly horizon):
+
+- **Entry threshold is everything.** Entering on 2-3c cross-venue gaps loses money on the calibrated sim — those gaps are mostly noise and fees eat the round trip. Only 4c+ gaps are worth taking. This mirrors the arb-stress finding: the strategy lives or dies on the gap-vs-cost ratio.
+- **Risk sizing swept 4→15%:** returns scale up but so do drawdowns; at 15% the worst seed breaches the 15% drawdown cap. **10% per trade is the sweet spot: +5.21%/month median, +14.2% worst-seed drawdown — every seed inside the cap.**
+- New config applied to params.json and the goal profile. Goal v2 status: **venue-arb passes at stretch level (🚀 +5.2%/month, 9.1% median drawdown). The other three systems still fail.**
+
+Standing caveat, unchanged: this is the one system with no real-data validation possible in this sandbox (no public two-venue tick data). Its numbers are the calibrated simulator's word. The stale-quote mechanism that generates the gaps is plausible but unverified — treat this as "promising pending real data," never as proven.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

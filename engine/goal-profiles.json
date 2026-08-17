@@ -10,37 +10,129 @@
       "market": "stocks-long-real",
       "kind": "real",
       "bars": 2880,
-      "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
       "margin": 2,
-      "params": { "allowShort": true, "fast": 20, "slow": 60 },
-      "risk": { "riskPerTradePct": 2, "maxPositionPct": 60, "maxPositions": 4, "dailyLossLimitPct": 3, "stopLossPct": 2, "takeProfitPct": 6 }
+      "params": {
+        "allowShort": true,
+        "fast": 20,
+        "slow": 60
+      },
+      "risk": {
+        "riskPerTradePct": 2,
+        "maxPositionPct": 60,
+        "maxPositions": 4,
+        "dailyLossLimitPct": 3,
+        "stopLossPct": 2,
+        "takeProfitPct": 6
+      }
     },
     "rsi-mean-reversion": {
       "market": "stocks-long-real",
       "kind": "real",
       "bars": 2880,
-      "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
       "margin": 2,
-      "params": { "mode": "momentum", "allowShort": true, "rsiPeriod": 21, "breakout": 60, "fade": 48, "stopLossPct": 2, "takeProfitPct": 6 },
-      "risk": { "riskPerTradePct": 2, "maxPositionPct": 60, "maxPositions": 4, "dailyLossLimitPct": 3 }
+      "params": {
+        "mode": "momentum",
+        "allowShort": true,
+        "rsiPeriod": 21,
+        "breakout": 60,
+        "fade": 48,
+        "stopLossPct": 2,
+        "takeProfitPct": 6
+      },
+      "risk": {
+        "riskPerTradePct": 2,
+        "maxPositionPct": 60,
+        "maxPositions": 4,
+        "dailyLossLimitPct": 3
+      }
     },
     "extreme-fade": {
       "market": "prediction",
       "kind": "sim",
       "bars": 43200,
-      "seeds": [1, 2, 3, 5, 8, 13, 21, 34, 55, 99],
+      "seeds": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        13,
+        21,
+        34,
+        55,
+        99
+      ],
       "margin": 1,
-      "symbols": ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10"],
-      "params": { "minJump": 0.04, "minStretch": 0.05 },
-      "risk": { "riskPerTradePct": 4, "maxPositionPct": 25, "maxPositions": 6, "dailyLossLimitPct": 3 }
+      "symbols": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7",
+        "M8",
+        "M9",
+        "M10"
+      ],
+      "params": {
+        "minJump": 0.04,
+        "minStretch": 0.05
+      },
+      "risk": {
+        "riskPerTradePct": 4,
+        "maxPositionPct": 25,
+        "maxPositions": 6,
+        "dailyLossLimitPct": 3
+      }
     },
     "venue-arb": {
       "market": "prediction-arb",
       "kind": "sim",
       "bars": 43200,
-      "seeds": [1, 2, 3, 5, 8, 13, 21, 34, 55, 99],
+      "seeds": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        13,
+        21,
+        34,
+        55,
+        99
+      ],
       "margin": 2,
-      "risk": { "riskPerTradePct": 4, "maxPositionPct": 50, "maxPositions": 8, "dailyLossLimitPct": 3 }
+      "risk": {
+        "riskPerTradePct": 10,
+        "maxPositionPct": 100,
+        "maxPositions": 8,
+        "dailyLossLimitPct": 3
+      }
     }
   }
 }
