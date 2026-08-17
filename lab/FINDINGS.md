@@ -164,6 +164,19 @@ Tested whether brand-new Polymarket markets are looser than established ones, ac
 
 This closes Adam's prediction-market idea list (#4a expiry drift and #4b new-market mispricing both negative). The prediction venue is efficient at the timescales and data we can measure; no simple structural edge survives. What remains untested there would need dense (tick-level) data or genuine information advantage on specific events — neither is a systematic algorithm.
 
+## 2026-08-17 — goal changed to STEADY INCOME (Adam's call)
+
+Goal v3: median ≥1%/month, max drawdown ≤8%, and ≥80% of test months positive — steadiness over size. Scoreboard against the new bar:
+
+| System | Monthly | Drawdown | Months positive | Verdict |
+|---|---|---|---|---|
+| venue-arb (sim) | +4.75% | 4.7% | 80% | 🚀 meets income bar — but simulator-only |
+| sma-crossover (real) | −3.8% | 9.2% | 10% | ❌ |
+| rsi-momentum (real) | −6.7% | 12.6% | 20% | ❌ |
+| extreme-fade (sim) | −14.9% | 20.3% | 20% | ❌ |
+
+The income framing actually flatters the arb (its steadiness — 80% positive months, small drawdowns — is exactly the income profile) and correctly damns the rest. But the one system that fits is the one we cannot validate on real data. Honest state: no real-data system produces steady income; the only steady performer is unverifiable in this sandbox.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

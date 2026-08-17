@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-17T16:32:04.888Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-17T18:23:57.568Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -21,18 +21,18 @@ _Real historical data committed under `data/real/`: 1-min index bars (S&P 500, D
 | rsi-mean-reversion | stocks-real | -4.67% | -6.93% | -2.83% | 22.8% | 3266 |
 | extreme-fade | prediction-fair-real | 0.00% | -1.79% | 4.54% | 39.8% | 18 |
 
-## Goal: 3%+/month (stretch 5%+) with max drawdown ≤ 15% — ❌ NOT YET
+## Goal: 1%+/month (stretch 2%+) with max drawdown ≤ 8% — ❌ NOT YET
 
-_$500 per system, measured over ~1 month per run. "real" = real historical windows; "sim" = simulator only (no real data available at the cadence needed). Pass needs the return target AND the drawdown cap together._
+_$500 per system, measured over ~1 month per run. "real" = real historical windows; "sim" = simulator only. Income goal: steady beats big — pass needs the return floor, the drawdown cap, AND 80%+ of months positive, all together._
 
-| Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | Status |
-|---|---|---|---|---|---|---|---|
-| sma-crossover | real | -3.78% | -14.47% | 0.02% | 9.2% | 15.6% | ❌ |
-| rsi-mean-reversion | real | -6.74% | -17.49% | 6.89% | 12.6% | 21.2% | ❌ |
-| extreme-fade | sim | -14.91% | -23.35% | 10.41% | 20.3% | 24.4% | ❌ |
-| venue-arb | sim | 4.75% | -6.43% | 13.87% | 4.7% | 6.4% | ✅ pass |
+| Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | % months positive | Status |
+|---|---|---|---|---|---|---|---|---|
+| sma-crossover | real | -3.78% | -14.47% | 0.02% | 9.2% | 15.6% | 10% | ❌ |
+| rsi-mean-reversion | real | -6.74% | -17.49% | 6.89% | 12.6% | 21.2% | 20% | ❌ |
+| extreme-fade | sim | -14.91% | -23.35% | 10.41% | 20.3% | 24.4% | 20% | ❌ |
+| venue-arb | sim | 4.75% | -6.43% | 13.87% | 4.7% | 6.4% | 80% | 🚀 stretch |
 
-_The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk settings. Push returns higher only while the drawdown cap holds._
+_Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, small drawdowns, and mostly-positive months. Size matters less than never blowing up._
 
 ## Tuned parameters
 
@@ -81,5 +81,6 @@ _The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk
 | 12 | 08-17 08:33 | 16.60 | -13.83 | 0.25 | -0.29 | venue-arb ✓ |
 | 13 | 08-17 12:46 | 16.60 | -13.83 | 0.25 | -0.29 | sma-crossover |
 | 14 | 08-17 16:32 | 16.60 | -12.80 | 0.25 | -0.29 | rsi-mean-reversion ✓ |
+| 15 | 08-17 18:23 | 16.60 | -12.80 | 0.25 | -0.29 | — |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

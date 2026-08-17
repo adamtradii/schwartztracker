@@ -184,17 +184,23 @@ export async function evaluateGoal() {
       dds.push(st.stats.maxDrawdownPct);
     }
     const medRet = median(rets), medDD = median(dds);
+    // Income goal: steadiness matters more than size. Consistency = share of
+    // windows/months that finished positive.
+    const pctPositive = (100 * rets.filter((r) => r > 0).length) / rets.length;
+    const consistency = goal.consistencyPct ?? 0;
     out.push({
       strategy, market: prof.market, kind: prof.kind,
       medianMonthlyPct: medRet, worstMonthlyPct: Math.min(...rets), bestMonthlyPct: Math.max(...rets),
       medianDrawdownPct: medDD, worstDrawdownPct: Math.max(...dds),
-      pass: medRet >= goal.monthlyTargetPct && medDD <= goal.maxDrawdownPct,
-      stretch: medRet >= goal.stretchTargetPct && medDD <= goal.maxDrawdownPct,
+      pctPositive,
+      pass: medRet >= goal.monthlyTargetPct && medDD <= goal.maxDrawdownPct && pctPositive >= consistency,
+      stretch: medRet >= goal.stretchTargetPct && medDD <= goal.maxDrawdownPct && pctPositive >= consistency,
     });
   }
   return {
     mode: goal.mode, cash: goal.cash,
-    monthlyTargetPct: goal.monthlyTargetPct, stretchTargetPct: goal.stretchTargetPct, maxDrawdownPct: goal.maxDrawdownPct,
+    monthlyTargetPct: goal.monthlyTargetPct, stretchTargetPct: goal.stretchTargetPct,
+    maxDrawdownPct: goal.maxDrawdownPct, consistencyPct: goal.consistencyPct ?? 0,
     results: out, allPass: out.every((r) => r.pass),
   };
 }
@@ -226,14 +232,14 @@ function writeReport(history) {
   if (latest.goal) {
     const g = latest.goal;
     lines.push("", `## Goal: ${g.monthlyTargetPct}%+/month (stretch ${g.stretchTargetPct}%+) with max drawdown ≤ ${g.maxDrawdownPct}% — ${g.allPass ? "✅ ALL SYSTEMS PASS" : "❌ NOT YET"}`, "");
-    lines.push(`_$${g.cash} per system, measured over ~1 month per run. "real" = real historical windows; "sim" = simulator only (no real data available at the cadence needed). Pass needs the return target AND the drawdown cap together._`, "");
-    lines.push("| Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | Status |");
-    lines.push("|---|---|---|---|---|---|---|---|");
+    lines.push(`_$${g.cash} per system, measured over ~1 month per run. "real" = real historical windows; "sim" = simulator only. Income goal: steady beats big — pass needs the return floor, the drawdown cap, AND ${g.consistencyPct ?? 0}%+ of months positive, all together._`, "");
+    lines.push("| Strategy | Data | Median monthly | Worst | Best | Median DD | Worst DD | % months positive | Status |");
+    lines.push("|---|---|---|---|---|---|---|---|---|");
     for (const r of g.results) {
       const status = r.stretch ? "🚀 stretch" : r.pass ? "✅ pass" : "❌";
-      lines.push(`| ${r.strategy} | ${r.kind} | ${r.medianMonthlyPct.toFixed(2)}% | ${r.worstMonthlyPct.toFixed(2)}% | ${r.bestMonthlyPct.toFixed(2)}% | ${r.medianDrawdownPct.toFixed(1)}% | ${r.worstDrawdownPct.toFixed(1)}% | ${status} |`);
+      lines.push(`| ${r.strategy} | ${r.kind} | ${r.medianMonthlyPct.toFixed(2)}% | ${r.worstMonthlyPct.toFixed(2)}% | ${r.bestMonthlyPct.toFixed(2)}% | ${r.medianDrawdownPct.toFixed(1)}% | ${r.worstDrawdownPct.toFixed(1)}% | ${(r.pctPositive ?? 0).toFixed(0)}% | ${status} |`);
     }
-    lines.push("", "_The old 3x-in-72-hours goal was retired 2026-08-16: it required ruin-level risk settings. Push returns higher only while the drawdown cap holds._");
+    lines.push("", "_Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, small drawdowns, and mostly-positive months. Size matters less than never blowing up._");
   }
   lines.push("", "## Tuned parameters", "", "```json", JSON.stringify(loadTunedParams(), null, 2), "```", "");
   lines.push("## Score history (median-return robustness score per run)", "");
@@ -282,11 +288,12 @@ async function main() {
     console.log(`[lab] ${r.strategy.padEnd(20)} ${r.market.padEnd(16)} median ${r.medianReturnPct.toFixed(2).padStart(7)}%  worst ${r.worstReturnPct.toFixed(2).padStart(7)}%  trades ${r.totalTrades}`);
   }
 
-  console.log(`\n[lab] goal check: ${""}3%+/month (stretch 5%+), max drawdown ≤ 15%, ~1 month per run`);
+  const goalCfg = JSON.parse(fs.readFileSync(GOAL_PATH, "utf8"));
+  console.log(`\n[lab] income goal: ${goalCfg.monthlyTargetPct}%+/month, drawdown ≤ ${goalCfg.maxDrawdownPct}%, ${goalCfg.consistencyPct}%+ months positive`);
   const goal = await evaluateGoal();
   for (const r of goal.results) {
     const status = r.stretch ? "🚀" : r.pass ? "✅" : "❌";
-    console.log(`[lab] ${r.strategy.padEnd(20)} (${r.kind})  monthly ${r.medianMonthlyPct.toFixed(2).padStart(7)}%  dd ${r.medianDrawdownPct.toFixed(1).padStart(5)}%  ${status}`);
+    console.log(`[lab] ${r.strategy.padEnd(20)} (${r.kind})  monthly ${r.medianMonthlyPct.toFixed(2).padStart(7)}%  dd ${r.medianDrawdownPct.toFixed(1).padStart(5)}%  +months ${(r.pctPositive ?? 0).toFixed(0).padStart(3)}%  ${status}`);
   }
   console.log(`[lab] goal status: ${goal.allPass ? "✅ ALL SYSTEMS PASS" : "❌ not yet"}`);
 

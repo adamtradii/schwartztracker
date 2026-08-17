@@ -1,10 +1,11 @@
 {
-  "mode": "sustainable",
+  "mode": "income",
   "cash": 500,
-  "monthlyTargetPct": 3,
-  "stretchTargetPct": 5,
-  "maxDrawdownPct": 15,
-  "note": "Goal v2 (set 2026-08-16): 3%/month minimum with max drawdown <= 15%, stretch 5%+/month. Measured over ~1 month per run: real 30-day windows where real data exists, 43200 simulated 1-min bars otherwise. Pass = median return >= target AND median max drawdown <= cap. Risk settings are deliberately moderate — the old 3x-in-72h profiles (git history) required ruin-level risk and are retired.",
+  "monthlyTargetPct": 1,
+  "stretchTargetPct": 2,
+  "maxDrawdownPct": 8,
+  "consistencyPct": 80,
+  "note": "Goal v3 (set 2026-08-17): STEADY INCOME. Pass = median monthly return >= 1% AND median max drawdown <= 8% AND at least 80% of test months positive. Stretch = 2%+/month with the same steadiness. Measured over ~1 month per run (real 30-day windows where real data exists, 43200 sim bars otherwise). Consistency and small drawdowns matter more than return size. Retired: v2 (3%/mo, DD<=15%) and the original 3x-in-72h ruin-risk goal (git history).",
   "profiles": {
     "sma-crossover": {
       "market": "stocks-long-real",
