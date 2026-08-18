@@ -252,6 +252,19 @@ So the honest hierarchy for Adam:
 
 Every trading strategy we built lands *below* option 1 (safe) on return-per-unit-risk. None earned its place over just picking 1 or 2 based on your risk tolerance.
 
+## 2026-08-18 08:29Z — cycle 12
+
+### 15. RSI momentum confirmed a simulator artifact — worthless on real data
+
+Measured the real per-trade economics of the RSI momentum strategy (the one that looked like a monster in the simulator before calibration):
+
+- **9 years of daily S&P:** +4.2% *total* — that's **0.46% per year**, 56 trades, 30% win rate, 18.6% max drawdown. Barely above zero over nearly a decade, with a big drawdown. Below T-bills, below the golden cross, below everything.
+- **30-day windows:** −1.4% median, positive in only 3/10, loses money.
+
+The strategy's giant simulated returns (over +2,900%/month before the simulator was calibrated in cycle 3) were entirely an artifact of the too-easy fake data. On real markets it has no edge worth the name. This closes the last untested strategy claim — every system we built has now been measured on real data, and none produces a real income edge.
+
+Also closed (superseded): the "fade threshold sweep" backlog item — cycles 6-7 already established that fading price moves does not clear real costs at any threshold on unbiased liquid data.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

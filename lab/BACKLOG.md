@@ -15,12 +15,12 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Fade threshold sweep on real data**: extreme-fade on prediction-real with minJump ∈ {5c, 8c} only; compare vs costs. If nothing clears 1c round-trip, record that fading mids at snapshot cadence is untradeable and mark the strategy sim-only.
 - [ ] **Maker-side fill modeling (prediction)**: add an optional fill model where entries rest at the mid and fill only if the next bar trades through (no slip, fill risk instead). Re-test fade economics under it — honestly model the non-fills.
-- [ ] **Momentum breakout on real stocks**: rsi-momentum mode won big in sim but sim over-trends; measure its real-data economics per trade (like the SMA cross study) before trusting it anywhere.
 - [ ] **Goal-profile drawdown audit**: for each goal profile, record intra-run max drawdown distribution across seeds — flag any profile whose median drawdown exceeds 40% as effectively ruin-risk even in sim.
 
 ## Done
+
+- [x] 2026-08-18 (cycle 12) RSI momentum real economics: +0.46%/yr on 9y daily (30% win, 18.6% DD), -1.4% median on 30-day windows — worthless on real data; its +2,900%/mo sim result was pure pre-calibration artifact. Fade-threshold item closed (superseded by cycles 6-7). Every built system now measured on real data; none has a real income edge → FINDINGS.md #15
 
 - [x] 2026-08-18 (cycle 11) Bias re-ingest CLOSED (fair windows show +0.29c continuation, no reversion edge) + arb execution-cost stress: arb is fragile — 4c entry craters to -14%/mo at 1c slippage; raised to 8c for robustness but nothing survives 2c; the income "pass" rides on unverifiable cheap-execution assumption → FINDINGS.md #14
 
