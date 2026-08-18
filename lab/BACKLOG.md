@@ -15,7 +15,6 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Portfolio combination test** (Adam's #3): build engine/experiments/portfolio-study.js — combine the per-system equity curves (equal capital split, using each system's best-known real-data config; sim-only for venue-arb, labeled as such) and measure combined return, drawdown, and whether diversification helps vs the best single system. Use real-data results where they exist.
 - [ ] **Re-ingest prediction windows without selection bias**: change ingest-real.js market selection from top-range to seeded-random among usable markets, re-run reversion study on committed windows, confirm it matches the full-sample sign.
 - [ ] **Fade threshold sweep on real data**: extreme-fade on prediction-real with minJump ∈ {5c, 8c} only; compare vs costs. If nothing clears 1c round-trip, record that fading mids at snapshot cadence is untradeable and mark the strategy sim-only.
 - [ ] **Adaptive arb entry threshold**: make venue-arb's entrySpread scale with a cost estimate (≥ 4× per-leg slip + 1c margin), re-run arb-stress. Goal: median stays positive at 1c slip even if smaller.
@@ -25,6 +24,7 @@ Never suggest circumventing state restrictions.
 
 ## Done
 
+- [x] 2026-08-18 (cycle 10) Portfolio/diversification: spreading golden cross across 4 indices halved drawdown for free (20%→10%) but blend still only 53% months-up, ~5.4%/yr; even buy-hold S&P is 63% months-up — stocks can't hit 80%-months-positive, that's a fixed-income property → FINDINGS.md #13
 - [x] 2026-08-17 (cycle 9) Slow strategies: golden cross (SMA 50/200) is the first positive real-data stock config (+3% median on 30-day windows, +37%/9y daily, 8.7% maxDD) BUT buy-and-hold made +109% same period, and 3.6%/yr < T-bills — trend-following is a drawdown-reducer, not an edge; no stock income edge exists → FINDINGS.md #12
 - [x] 2026-08-17 (cycle 8) New-market mispricing study: young markets priced just as tightly as mature (0.1c spread at every age; young ≤ mature even among uncertain markets) — no maker/sloppiness edge; closes Adam's prediction idea list (#4a and #4b both negative) → FINDINGS.md #11
 - [x] 2026-08-17 (cycle 7) Fade re-judged on UNBIASED liquid windows (prediction-fair-real, random selection, liq≥$5k, measured 0.1c cost): only 7-18 trades across 10 windows, ~0% median — no bettable edge; extreme-fade RETIRED as real-data candidate (sparse ~25-min data is a caveat, not a rescue) → FINDINGS.md #10

@@ -194,6 +194,19 @@ And for the income goal specifically: +37% over 9 years is about **3.6% per year
 
 **Applied:** the sma-crossover goal profile is switched to the honest best (50/200 long-only) so the scoreboard reflects the least-bad real config, still short of the 80%-consistency income bar.
 
+## 2026-08-18 00:29Z — cycle 10
+
+### 13. Diversification is a real free lunch for drawdown — but can't manufacture monthly steadiness
+
+Combined the one positive real stock strategy (golden cross) across all 4 indices at once, on the same 2010-2018 period (a legitimate, contemporaneous diversification test):
+
+- **Spreading across 4 indices roughly halved the drawdown for free:** the golden-cross blend had a 10.4% max drawdown vs ~20% for any single index — same return, much smoother. Diversification genuinely works and costs nothing. Worth doing on anything you run.
+- **But it still doesn't reach the income bar.** The diversified trend blend: ~5.4%/year, 10.4% max drawdown, and only **53% of months positive.** The income goal wants ≥80% of months positive — and *nothing here comes close*.
+
+**The deeper lesson — why the income bar is so hard for these assets:** even plain buy-and-hold the S&P is only up in ~63% of months; the diversified stock blends are ~53-59%. Stocks are simply choppy month to month — that's their nature. **"Positive almost every month" is not a property any stock strategy can provide**, diversified or not, trend or buy-hold. The only assets that are up ~100% of months are fixed income (T-bills, money-market, short bonds) — which is exactly why they, not any trading strategy, are the real tool for a steady monthly income stream.
+
+**Honest conclusion of the diversification thread:** combining systems helps drawdown a lot and should be used, but it cannot turn choppy assets into a steady paycheck. The 80%-months-positive requirement is met by savings-type instruments, full stop — no algorithm in this project reaches it on real data.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
