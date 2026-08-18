@@ -27,7 +27,7 @@ export async function runBacktest(opts) {
   // "-real" markets replay committed historical data; `seed` selects the window.
   const adapter = market.endsWith("-real")
     ? new ReplayAdapter({ market, window: seed, resample: opts.resample })
-    : new SimulatedAdapter({ market, seed, symbols: opts.symbols });
+    : new SimulatedAdapter({ market, seed, symbols: opts.symbols, slippage: opts.slippage, failRate: opts.failRate });
   await adapter.connect();
 
   const portfolio = new Portfolio(cash, { margin: opts.margin ?? 1 });

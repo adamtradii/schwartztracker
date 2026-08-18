@@ -207,6 +207,26 @@ Combined the one positive real stock strategy (golden cross) across all 4 indice
 
 **Honest conclusion of the diversification thread:** combining systems helps drawdown a lot and should be used, but it cannot turn choppy assets into a steady paycheck. The 80%-months-positive requirement is met by savings-type instruments, full stop — no algorithm in this project reaches it on real data.
 
+## 2026-08-18 04:29Z — cycle 11
+
+### 14. The arbitrage "pass" is fragile — it only works if execution is cheap, and we can't guarantee that
+
+Closed the prediction-window bias item (the unbiased fair windows show slight *continuation* after big moves, +0.29c — confirming no reversion edge once cherry-picking is removed). Then stress-tested the one passing system, venue-arb, against realistic execution cost. (Also fixed a plumbing bug: the slippage override wasn't reaching the simulator, so earlier this-cycle numbers were identical across cost levels — now corrected.)
+
+Median monthly return by entry threshold vs. real per-trade slippage:
+
+| Entry gap required | at 0.5c | at 1.0c | at 1.5c | at 2.0c |
+|---|---|---|---|---|
+| 4c (old setting) | +4.0% | **−14.3%** | −29.4% | −35.1% |
+| 8c (new setting) | +12.9% | −1.6% | −12.5% | −23.2% |
+| 10c | +10.3% | 0.0% | 0.0% | −4.9% |
+
+**Plain English:** the arbitrage system makes good money *only if* trading costs about half a cent per trade. Bump that to one cent and it barely breaks even; at two cents it loses badly. Requiring bigger price gaps before trading (raised the setting from 4c to 8c) makes it more robust, but nothing survives 2c cost.
+
+Why this matters: real arbitrage means being a *taker* on both venues simultaneously (you can't wait for a good fill — the gap closes). Taker costs plus the reality that the cheap venue isn't always the tight one make ~1c+ effective cost entirely plausible. So venue-arb's "pass" sits right at the edge of viability, on the one assumption (cheap execution) we have no real data to confirm.
+
+**Bottom line: the only system that meets the income goal does so on a knife-edge cost assumption we can't verify.** Raised the entry threshold to 8c for robustness, but the honest label is now "sim-only AND fragile to costs" — not a system to fund on faith.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

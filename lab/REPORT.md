@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-18T00:32:31.279Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-18T04:35:41.796Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -9,7 +9,7 @@ _Last run: 2026-08-18T00:32:31.279Z · $500 simulated bankroll per strategy · 1
 | sma-crossover | stocks | 13.09% | 8.38% | 22.94% | 2.72% | 33.3% | 2619 | 16.60 |
 | rsi-mean-reversion | stocks | -5.82% | -10.86% | -3.58% | 6.18% | 18.7% | 390 | -12.80 |
 | extreme-fade | prediction | 0.37% | -0.19% | 1.23% | 0.11% | 50.0% | 11 | 0.25 |
-| venue-arb | prediction-arb | -0.08% | -0.34% | 0.43% | 0.18% | 18.3% | 27 | -0.29 |
+| venue-arb | prediction-arb | 0.00% | -0.41% | 0.94% | 0.17% | 18.3% | 18 | -0.25 |
 
 ## Real-data validation
 
@@ -30,7 +30,7 @@ _$500 per system, measured over ~1 month per run. "real" = real historical windo
 | sma-crossover | real | -1.56% | -8.54% | 5.32% | 5.1% | 10.0% | 40% | ❌ |
 | rsi-mean-reversion | real | -6.74% | -17.49% | 6.89% | 12.6% | 21.2% | 20% | ❌ |
 | extreme-fade | sim | -14.91% | -23.35% | 10.41% | 20.3% | 24.4% | 20% | ❌ |
-| venue-arb | sim | 4.75% | -6.43% | 13.87% | 4.7% | 6.4% | 80% | 🚀 stretch |
+| venue-arb | sim | 12.88% | -10.20% | 18.11% | 5.5% | 10.4% | 80% | 🚀 stretch |
 
 _Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, small drawdowns, and mostly-positive months. Size matters less than never blowing up._
 
@@ -50,9 +50,9 @@ _Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, sm
     "slow": 50
   },
   "venue-arb": {
-    "entrySpread": 0.05,
-    "exitSpread": 0.005,
-    "stopSpread": 0.2
+    "entrySpread": 0.08,
+    "exitSpread": 0.01,
+    "stopSpread": 0.15
   },
   "extreme-fade": {
     "trend": 40,
@@ -84,5 +84,6 @@ _Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, sm
 | 15 | 08-17 18:23 | 16.60 | -12.80 | 0.25 | -0.29 | — |
 | 16 | 08-17 20:33 | 16.60 | -12.80 | 0.25 | -0.29 | venue-arb |
 | 17 | 08-18 00:32 | 16.60 | -12.80 | 0.25 | -0.29 | sma-crossover |
+| 18 | 08-18 04:35 | 16.60 | -12.80 | 0.25 | -0.25 | — |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._
