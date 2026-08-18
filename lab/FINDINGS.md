@@ -265,6 +265,19 @@ The strategy's giant simulated returns (over +2,900%/month before the simulator 
 
 Also closed (superseded): the "fade threshold sweep" backlog item — cycles 6-7 already established that fading price moves does not clear real costs at any threshold on unbiased liquid data.
 
+## 2026-08-18 12:29Z — cycle 13
+
+### 16. "Earning the spread" doesn't rescue the fade — adverse selection makes it worse
+
+Tested the obvious idea: instead of *paying* the spread to enter a fade (taker), rest a limit order and *earn* it (maker). Result on the unbiased liquid windows:
+
+- Taker fade: −0.50c per trade.
+- Maker fade: **−2.62c per trade** — much worse, and only 18 of 39 signals ever filled.
+
+**Why it's worse, in plain terms:** a resting order only gets filled when someone trades *into* it — which for a fade means the price kept moving against you before you were even in. So you only ever get filled on the trades that are already going the wrong way, and those keep going. "Earn the spread" sounds like free money, but you get filled precisely when you least want to be. This is *adverse selection*, and it's the reason passive market-making is a real skill, not a free lunch — the same reason retail "provide liquidity" schemes quietly bleed out.
+
+This closes the maker-fill item and reinforces the core lesson: there is no clever execution trick that turns a non-edge into an edge. Costs and adverse selection are features of an efficient market, not bugs to route around.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.

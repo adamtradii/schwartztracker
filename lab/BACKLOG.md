@@ -15,10 +15,11 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Maker-side fill modeling (prediction)**: add an optional fill model where entries rest at the mid and fill only if the next bar trades through (no slip, fill risk instead). Re-test fade economics under it — honestly model the non-fills.
 - [ ] **Goal-profile drawdown audit**: for each goal profile, record intra-run max drawdown distribution across seeds — flag any profile whose median drawdown exceeds 40% as effectively ruin-risk even in sim.
 
 ## Done
+
+- [x] 2026-08-18 (cycle 13) Maker-side fade: earning the spread makes it WORSE (-2.62c/trade vs -0.50c taker, only 18/39 fill) — adverse selection: resting orders fill only when price runs against you. No execution trick turns a non-edge into an edge → FINDINGS.md #16
 
 - [x] 2026-08-18 (cycle 12) RSI momentum real economics: +0.46%/yr on 9y daily (30% win, 18.6% DD), -1.4% median on 30-day windows — worthless on real data; its +2,900%/mo sim result was pure pre-calibration artifact. Fade-threshold item closed (superseded by cycles 6-7). Every built system now measured on real data; none has a real income edge → FINDINGS.md #15
 
