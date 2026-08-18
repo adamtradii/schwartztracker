@@ -1,6 +1,6 @@
 # Lab Report
 
-_Last run: 2026-08-18T12:31:44.567Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
+_Last run: 2026-08-18T16:32:17.799Z · $500 simulated bankroll per strategy · 10 seeds × 6000 one-minute bars each._
 
 ## Current performance
 
@@ -87,5 +87,6 @@ _Goal is now a STEADY INCOME stream (set 2026-08-17): modest positive return, sm
 | 18 | 08-18 04:35 | 16.60 | -12.80 | 0.25 | -0.25 | — |
 | 19 | 08-18 08:31 | 16.60 | -12.80 | 0.25 | -0.25 | — |
 | 20 | 08-18 12:31 | 16.60 | -12.80 | 0.25 | -0.25 | — |
+| 21 | 08-18 16:32 | 16.60 | -12.80 | 0.25 | -0.25 | — |
 
 _All results are simulated paper trading. A score that only improves on simulated data may not transfer to live markets._

@@ -15,9 +15,11 @@ Never suggest circumventing state restrictions.
 
 ## Queue
 
-- [ ] **Goal-profile drawdown audit**: for each goal profile, record intra-run max drawdown distribution across seeds — flag any profile whose median drawdown exceeds 40% as effectively ruin-risk even in sim.
+_(empty — experimental program complete; see lab/FINDINGS.md. Remaining cycles are regression-only until the final summary.)_
 
 ## Done
+
+- [x] 2026-08-18 (cycle 14) Drawdown audit: no ruin-risk — sma-crossover & venue-arb ~10% worst-case DD, nothing near 40%; income-era profiles are honest/moderate vs retired day-1 ruin profiles. Backlog complete, 17 findings → FINDINGS.md #17
 
 - [x] 2026-08-18 (cycle 13) Maker-side fade: earning the spread makes it WORSE (-2.62c/trade vs -0.50c taker, only 18/39 fill) — adverse selection: resting orders fill only when price runs against you. No execution trick turns a non-edge into an edge → FINDINGS.md #16
 

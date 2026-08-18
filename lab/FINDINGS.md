@@ -278,6 +278,23 @@ Tested the obvious idea: instead of *paying* the spread to enter a fade (taker),
 
 This closes the maker-fill item and reinforces the core lesson: there is no clever execution trick that turns a non-edge into an edge. Costs and adverse selection are features of an efficient market, not bugs to route around.
 
+## 2026-08-18 16:29Z — cycle 14 (experimental program complete)
+
+### 17. Drawdown audit: no hidden ruin-risk in the current profiles
+
+Checked the worst-case drawdown of every goal profile across all seeds — the safety check that would catch a strategy that looks fine on average but occasionally craters:
+
+| System | Median DD | Worst-seed DD |
+|---|---|---|
+| sma-crossover (real) | 5.1% | 10.0% |
+| venue-arb (sim) | 5.5% | 10.4% |
+| rsi-mean-reversion (real) | 12.6% | 21.2% |
+| extreme-fade (sim) | 20.3% | 24.4% (a losing strategy anyway) |
+
+Nothing approaches ruin territory (>40%). The two systems worth anything (sma-crossover, venue-arb) have genuinely shallow drawdowns (~10% worst case). This is the deliberate legacy of retiring the day-1 profiles, which used ruin-level risk (15-40% per trade) to chase 3x-in-72h and could realistically zero the account. The income-era profiles are honest and moderate. Confirmed: no strategy here hides a blow-up.
+
+**This closes the experiment's backlog — every planned experiment is done (17 findings).** Remaining cycles until the final summary are regression checks only; no new hypotheses are queued because the question has been answered thoroughly and consistently.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
