@@ -227,6 +227,31 @@ Why this matters: real arbitrage means being a *taker* on both venues simultaneo
 
 **Bottom line: the only system that meets the income goal does so on a knife-edge cost assumption we can't verify.** Raised the entry threshold to 8c for robustness, but the honest label is now "sim-only AND fragile to costs" — not a system to fund on faith.
 
+## 2026-08-18 — THE BORING BASELINE (the bar everything must beat)
+
+Computed what safe/simple money actually does, on the same real data, so every strategy is judged against real alternatives instead of against zero:
+
+| Option | Return/yr | Max drawdown | Months positive | Meets income goal? |
+|---|---|---|---|---|
+| Money-market / T-bills (today, ~4.5%) | 4.5% | **0%** | **100%** | No — return too low |
+| Money-market (2010-18 near-zero era) | 0.3% | 0% | 100% | No |
+| S&P buy & hold (real 2010-18) | 7.7% | 21% | 63% | No — too choppy |
+| 60/40 stocks+cash | 6.5% | 14% | 67% | No |
+
+**The single most important takeaway of the whole 72-hour experiment:** *nothing* cleanly meets the income goal as written — not our strategies, and not even the safe baselines. Here's why, in plain terms:
+
+- The goal asks for **1%/month (~12.7%/year) AND bond-like steadiness (up 80%+ of months, drawdowns under 8%).**
+- Safe money (T-bills, money-market) gives you the *steadiness* — up literally every month, zero drawdown — but only ~4.5%/year today (0.37%/month), **below** the 1%/month target.
+- Risky money (stocks) can give you the *return* over time (~7-8%/year) but is only up ~63% of months and routinely falls 15-35%.
+- **1%/month with bond-steadiness sits in a gap that no simple, safe instrument fills.** Getting return AND steadiness together is exactly what professional money management charges fees to attempt, and mostly fails at.
+
+So the honest hierarchy for Adam:
+1. **Want steady, never-lose monthly income?** → money-market/T-bills, ~4.5%/yr today. Real, safe, but that's the ceiling for "steady."
+2. **Want more return and can stomach drawdowns?** → buy-and-hold a diversified index, ~7-8%/yr, but expect down months and occasional 20%+ dips.
+3. **Want both — 1%/mo AND steady?** → that product basically doesn't exist safely; chasing it is what led to the ruin-risk settings we started with in day 1.
+
+Every trading strategy we built lands *below* option 1 (safe) on return-per-unit-risk. None earned its place over just picking 1 or 2 based on your risk tolerance.
+
 ### Cross-cutting
 
 The sim-vs-real gap (strategies profitable in sim, losing on real data) is now explained mechanistically for stocks: the simulator's GBM-with-drift-regimes trends more than real index prices at 1-min. The fix is honest strategy/timescale changes, never re-tuning the simulator toward the strategies.
